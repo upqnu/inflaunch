@@ -47,4 +47,9 @@ public class User extends BaseEntity{
     public void addAuthority(Authority... authorities){
         Collections.addAll(this.authorities, authorities);
     }
+
+    @OneToMany(mappedBy = "user")
+    @ToString.Exclude
+    @Builder.Default
+    private List<Course> courseList = new ArrayList<>();
 }
