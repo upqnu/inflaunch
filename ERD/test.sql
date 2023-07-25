@@ -5,3 +5,4 @@ SELECT * FROM type;
 SELECT * FROM course;
 SELECT * FROM video;
 SELECT * FROM review;
+SELECT * FROM report_review;

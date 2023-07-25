@@ -7,6 +7,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -37,4 +40,9 @@ public class Review extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ReviewStatus reviewStatus;
+
+    @OneToMany(mappedBy = "review")
+    @ToString.Exclude
+    @Builder.Default
+    private List<ReportReview> reportReviewList = new ArrayList<>();
 }

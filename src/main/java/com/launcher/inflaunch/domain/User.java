@@ -52,4 +52,9 @@ public class User extends BaseEntity{
     @ToString.Exclude
     @Builder.Default
     private List<Course> courseList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    @ToString.Exclude
+    @Builder.Default
+    private List<ReportReview> reportReviewList = new ArrayList<>();
 }
