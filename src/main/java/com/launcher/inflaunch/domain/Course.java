@@ -5,7 +5,6 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -35,4 +34,8 @@ public class Course extends BaseEntity{
     @Column(nullable = false)
     private int price;
 
+    @OneToMany(mappedBy = "course")
+    @ToString.Exclude
+    @Builder.Default
+    private List<Video> videoList = new ArrayList<>();
 }
