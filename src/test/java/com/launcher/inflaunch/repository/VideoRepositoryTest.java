@@ -2,6 +2,7 @@ package com.launcher.inflaunch.repository;
 
 import com.launcher.inflaunch.domain.Course;
 import com.launcher.inflaunch.domain.Video;
+import com.launcher.inflaunch.enum_status.VideoStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +34,7 @@ class VideoRepositoryTest {
                 .title("JAVA 기초문법 강의영상")
                 .source("https://www.youtube.com/watch?v=NQq0dOoEPUM")
                 .totalLength(36000)
+                .videoStatus(VideoStatus.ACTIVE)
                 .build();
 
         Video video2 = Video.builder()
@@ -40,6 +42,7 @@ class VideoRepositoryTest {
                 .title("MySQL 기초문법 강의영상")
                 .source("https://www.youtube.com/watch?v=dgpBXNa9vJc")
                 .totalLength(10800)
+                .videoStatus(VideoStatus.ACTIVE)
                 .build();
 
         Video video3 = Video.builder()
@@ -47,6 +50,7 @@ class VideoRepositoryTest {
                 .title("MyBatis 기초문법 강의영상")
                 .source("https://www.youtube.com/watch?v=4YOk7oLGTKI")
                 .totalLength(3600)
+                .videoStatus(VideoStatus.ACTIVE)
                 .build();
 
         Video video4 = Video.builder()
@@ -54,6 +58,7 @@ class VideoRepositoryTest {
                 .title("JPA 기초문법 강의영상")
                 .source("https://www.youtube.com/watch?v=yfElp7_jtog")
                 .totalLength(1800)
+                .videoStatus(VideoStatus.ACTIVE)
                 .build();
 
         Video video5 = Video.builder()
@@ -61,6 +66,7 @@ class VideoRepositoryTest {
                 .title("SPRING 기초문법 강의영상")
                 .source("https://www.youtube.com/watch?v=AalcVuKwBUM")
                 .totalLength(2700)
+                .videoStatus(VideoStatus.ACTIVE)
                 .build();
 
         video1 = videoRepository.save(video1);
@@ -74,4 +80,8 @@ class VideoRepositoryTest {
         pw.close();
     }
 
+//    @Test
+//    void delete() {
+//        videoRepository.deleteAll();
+//    }
 }

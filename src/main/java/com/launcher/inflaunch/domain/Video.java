@@ -1,5 +1,6 @@
 package com.launcher.inflaunch.domain;
 
+import com.launcher.inflaunch.enum_status.VideoStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +12,7 @@ import lombok.*;
 @Builder
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-@Entity(name = "videos")
+@Entity
 public class Video extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +33,7 @@ public class Video extends BaseEntity {
     @NotNull
     @Positive
     private int totalLength;
+
+    @Enumerated(EnumType.STRING)
+    private VideoStatus videoStatus;
 }
