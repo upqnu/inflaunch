@@ -43,4 +43,9 @@ public class Course extends BaseEntity{
     @ToString.Exclude
     @Builder.Default
     private List<Review> reviewList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course")
+    @ToString.Exclude
+    @Builder.Default
+    private List<Cart> cartList = new ArrayList<>();
 }

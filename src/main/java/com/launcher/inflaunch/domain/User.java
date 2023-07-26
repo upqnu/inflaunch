@@ -57,4 +57,9 @@ public class User extends BaseEntity{
     @ToString.Exclude
     @Builder.Default
     private List<ReportReview> reportReviewList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    @ToString.Exclude
+    @Builder.Default
+    private List<Cart> cartList = new ArrayList<>();
 }
