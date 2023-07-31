@@ -1,11 +1,12 @@
 package com.launcher.inflaunch.domain;
+import com.launcher.inflaunch.enum_status.CourseStatus;
+import com.launcher.inflaunch.enum_status.VideoStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -48,4 +49,7 @@ public class Course extends BaseEntity{
     @ToString.Exclude
     @Builder.Default
     private List<Cart> cartList = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    private CourseStatus courseStatus;
 }
