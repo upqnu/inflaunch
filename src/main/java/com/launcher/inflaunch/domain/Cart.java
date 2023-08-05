@@ -2,6 +2,8 @@ package com.launcher.inflaunch.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Data
@@ -22,6 +24,11 @@ public class Cart{
     @ManyToOne
     @ToString.Exclude
     private Course course;
+
+    @OneToMany(mappedBy = "cart",  cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @Builder.Default
+    private List<Payments> paymentsList = new ArrayList<>();
 
 
 

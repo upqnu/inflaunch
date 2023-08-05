@@ -9,3 +9,6 @@ SELECT * FROM report_review;
 SELECT * FROM cart;
 SELECT * FROM payments;
 SELECT * FROM transaction;
+Select * FROM category;
+
+delete from type;
