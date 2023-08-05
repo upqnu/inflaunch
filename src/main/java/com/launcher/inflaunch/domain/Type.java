@@ -8,29 +8,30 @@ import java.util.List;
 
 
 @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    @ToString(callSuper = true)
-    @Entity(name = "type")
-    public class Type{
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString(callSuper = true)
+@Entity(name = "type")
+public class Type {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-        @Column(nullable = false)
-        private String category;
-        @Column(unique = true, nullable = false)
-        private String type;
+    @Column(unique = true,nullable = false)
+    private String type;
+    @ManyToOne
+    @ToString.Exclude
+    private Category category;
 
-        @Column(nullable = false)
-        private int sequence;
+    @Column(nullable = false)
+    private int sequence;
 
-        @OneToMany(mappedBy = "type")
-        @ToString.Exclude
-        @Builder.Default
-        private List<Course> courseList = new ArrayList<>();
+    @OneToMany(mappedBy = "type",  cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @Builder.Default
+    private List<Course> courseList = new ArrayList<>();
 
-        public void addCourse(Course... course){Collections.addAll(courseList, course);}
+    public void addCourse(Course... course){Collections.addAll(courseList, course);}
 
 }

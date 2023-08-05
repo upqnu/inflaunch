@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface TypeRepository extends JpaRepository<Type, Long> {
     Type findBytype(String type);
 
+
     Type findBySequence(int sequence);
 
 }
