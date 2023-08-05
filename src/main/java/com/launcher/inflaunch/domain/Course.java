@@ -35,17 +35,17 @@ public class Course extends BaseEntity{
     @Column(nullable = false)
     private int price;
 
-    @OneToMany(mappedBy = "course")
+    @OneToMany(mappedBy = "course" ,  cascade = CascadeType.ALL)
     @ToString.Exclude
     @Builder.Default
     private List<Video> videoList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "course")
+    @OneToMany(mappedBy = "course",  cascade = CascadeType.ALL)
     @ToString.Exclude
     @Builder.Default
     private List<Review> reviewList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "course")
+    @OneToMany(mappedBy = "course",  cascade = CascadeType.ALL)
     @ToString.Exclude
     @Builder.Default
     private List<Cart> cartList = new ArrayList<>();

@@ -1,5 +1,6 @@
 package com.launcher.inflaunch.repository;
 
+import com.launcher.inflaunch.domain.Category;
 import com.launcher.inflaunch.domain.Type;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,34 +17,44 @@ class TypeRepositoryTest {
 
     @Autowired
     private TypeRepository typeRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+
     @Test
     void init() {
+
+        Category category1 = categoryRepository.findByCategory("백엔드");
+        Category category2 = categoryRepository.findByCategory("프론트엔드");
+        Category category3 = categoryRepository.findByCategory("게임 개발");
+
         Type type1 = Type.builder()
-                .category("백엔드")
+                .category(category1)
                 .type("JAVA")
                 .sequence(1)
                 .build();
 
         Type type2 = Type.builder()
-                .category("백엔드")
+                .category(category1)
                 .type("MySQL")
                 .sequence(2)
                 .build();
 
         Type type3 = Type.builder()
-                .category("백엔드")
+                .category(category1)
                 .type("MyBatis")
                 .sequence(3)
                 .build();
 
         Type type4 = Type.builder()
-                .category("백엔드")
+                .category(category1)
                 .type("JPA")
                 .sequence(4)
                 .build();
 
         Type type5 = Type.builder()
-                .category("백엔드")
+                .category(category1)
                 .type("SPRING")
                 .sequence(5)
                 .build();

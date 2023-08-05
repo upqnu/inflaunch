@@ -1,8 +1,10 @@
 package com.launcher.inflaunch.domain;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -11,27 +13,21 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @ToString(callSuper = true)
-@Entity(name = "cart")
-public class Cart{
+@Entity(name = "category")
+public class Category{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @ToString.Exclude
-    private User user;
+    @Column(unique = true, nullable = false)
+    private String category;
 
-    @ManyToOne
-    @ToString.Exclude
-    private Course course;
-
-    @OneToMany(mappedBy = "cart",  cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     @ToString.Exclude
     @Builder.Default
-    private List<Payments> paymentsList = new ArrayList<>();
+    private List<Type> typeList = new ArrayList<>();
 
-
-
-
+    public void addCourse(Type... type){Collections.addAll(typeList, type);}
 
 }
+

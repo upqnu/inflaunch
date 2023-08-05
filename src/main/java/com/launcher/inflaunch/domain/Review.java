@@ -41,7 +41,7 @@ public class Review extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ReviewStatus reviewStatus;
 
-    @OneToMany(mappedBy = "review")
+    @OneToMany(mappedBy = "review",  cascade = CascadeType.ALL)
     @ToString.Exclude
     @Builder.Default
     private List<ReportReview> reportReviewList = new ArrayList<>();
