@@ -48,18 +48,21 @@ public class User extends BaseEntity{
         Collections.addAll(this.authorities, authorities);
     }
 
-    @OneToMany(mappedBy = "user",  cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @ToString.Exclude
     @Builder.Default
+    @JsonIgnore
     private List<Course> courseList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user",  cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user",  fetch = FetchType.EAGER,  cascade = CascadeType.ALL)
     @ToString.Exclude
     @Builder.Default
+    @JsonIgnore
     private List<ReportReview> reportReviewList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user",  cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user",  fetch = FetchType.EAGER,  cascade = CascadeType.ALL)
     @ToString.Exclude
     @Builder.Default
+    @JsonIgnore
     private List<Cart> cartList = new ArrayList<>();
 }
