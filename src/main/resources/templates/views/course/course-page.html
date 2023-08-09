@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Course Details</title>
+</head>
+<body>
+
+<h1>강의 정보</h1>
+<h2 th:text="${course.title}"></h2>
+<p>
+  <strong>강의 소개:</strong>
+  <span th:text="${course.description}"></span>
+</p>
+<p>
+  <strong>수강료:</strong> ₩<span th:text="${#numbers.formatInteger(course.price, 0, 'COMMA')}"></span>
+</p>
+<p>
+  <strong>강사:</strong> <span th:text="${course.user.username}"></span>
+</p>
+<p>
+  <strong>강의 타입:</strong> <span th:text="${course.type.type}"></span>
+</p>
+<h3>[강의 영상]</h3>
+<ul>
+  <li th:each="video : ${course.videoList}">
+    <p><strong>영상 제목:</strong> <span th:text="${video.getTitle()}"></span><br></p>
+    <p><strong>영상 저장소스:</strong> <span th:text="${video.getSource()}"></span><br></p>
+    <p><strong>영상 재생시간:</strong> <span th:text="${video.getTotalLength()}"></span>초<br></p>
+    <hr>
+  </li>
+</ul>
+
+<!-- Buttons visible to admins or the user who created the course -->
+<div th:if="${hasAdminAuthority or course.user.username == currentUser}">
+  <a th:href="@{/courses/{id}/edit(id=${course.id})}">강의 수정</a><br>
+  <a th:href="@{/courses/{id}/delete(id=${course.id})}">강의 삭제</a>
+</div>
+
+<a href="/courses">강의리스트로 돌아가기</a>
+</body>
+</html>

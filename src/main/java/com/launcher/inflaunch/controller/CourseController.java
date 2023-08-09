@@ -4,6 +4,7 @@ import com.launcher.inflaunch.domain.Course;
 import com.launcher.inflaunch.domain.Type;
 import com.launcher.inflaunch.domain.User;
 import com.launcher.inflaunch.dto.CourseCreateDto;
+import com.launcher.inflaunch.exception.CourseNotFoundException;
 import com.launcher.inflaunch.repository.TypeRepository;
 import com.launcher.inflaunch.repository.UserRepository;
 import com.launcher.inflaunch.service.CourseService;
@@ -11,6 +12,8 @@ import com.launcher.inflaunch.service.CourseService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -78,6 +81,29 @@ public class CourseController {
         List<Course> courses = courseService.getAllCourses();
         model.addAttribute("courses", courses);
         return "course/courses"; // Without the file extension (.html)
+    }
+
+    /* 개별 강의 페이지 */
+    @GetMapping("/{id}")
+    public String showCourse(@PathVariable Long id, Model model) {
+
+        try {
+            Course course = courseService.getCourse(id);
+            model.addAttribute("course", course);
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean hasAdminAuthority = authentication.getAuthorities().stream()
+                    .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+            model.addAttribute("hasAdminAuthority", hasAdminAuthority);
+
+            String currentUser = authentication.getName();
+            model.addAttribute("currentUser", currentUser);
+
+            return "course/course-page";
+        } catch (CourseNotFoundException ex) {
+            model.addAttribute("errorMessage", "강의가 존재하지 않습니다.");
+            return "course/courses";
+        }
     }
 
 }

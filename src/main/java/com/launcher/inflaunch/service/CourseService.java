@@ -5,6 +5,7 @@ import com.launcher.inflaunch.dto.CourseCreateDto;
 import com.launcher.inflaunch.dto.VideoCreateDto;
 import com.launcher.inflaunch.enum_status.CourseStatus;
 import com.launcher.inflaunch.enum_status.VideoStatus;
+import com.launcher.inflaunch.exception.CourseNotFoundException;
 import com.launcher.inflaunch.repository.CourseRepository;
 import com.launcher.inflaunch.repository.TypeRepository;
 import com.launcher.inflaunch.repository.UserRepository;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -109,9 +111,24 @@ public class CourseService {
         return false;
     }
 
-    /* 모든 강의 불러오기 */
+    /* 모든 강의 리스트 */
     public List<Course> getAllCourses() {
         return courseRepository.findByCourseStatus(CourseStatus.ACTIVE);
     }
 
+    /* 개별 강의 페이지 */
+    @Transactional
+    public Course getCourse(Long courseId) {
+        Optional<Course> optionalCourse = courseRepository.findById(courseId);
+        if (optionalCourse.isPresent()) {
+            Course course = optionalCourse.get();
+            if (course.getCourseStatus() == CourseStatus.ACTIVE) {
+                return course;
+            } else {
+                throw new CourseNotFoundException("강의가 존재하지 않습니다.");
+            }
+        } else {
+            throw new CourseNotFoundException("강의가 존재하지 않습니다.");
+        }
+    }
 }
