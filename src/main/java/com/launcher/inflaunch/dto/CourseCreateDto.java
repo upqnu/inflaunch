@@ -18,13 +18,13 @@ public class CourseCreateDto {
     @NotNull
     private Long userId;
 
-    @NotNull
-    private String typeName;
+    @NotNull(message = "강의의 타입을 선택하세요.")
+    private String type;
 
-    @NotBlank
+    @NotBlank(message = "강의의 제목을 입력하세요.")
     private String title;
 
-    @NotBlank
+    @NotBlank(message = "강의 소개 내용을 입력하세요.")
     private String description;
 
     @Min(0)

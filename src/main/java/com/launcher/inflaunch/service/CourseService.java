@@ -5,16 +5,22 @@ import com.launcher.inflaunch.dto.CourseCreateDto;
 import com.launcher.inflaunch.dto.VideoCreateDto;
 import com.launcher.inflaunch.enum_status.CourseStatus;
 import com.launcher.inflaunch.enum_status.VideoStatus;
+import com.launcher.inflaunch.exception.CourseNotFoundException;
 import com.launcher.inflaunch.repository.CourseRepository;
 import com.launcher.inflaunch.repository.TypeRepository;
 import com.launcher.inflaunch.repository.UserRepository;
+import com.launcher.inflaunch.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -24,7 +30,28 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final TypeRepository typeRepository;
+    private final VideoRepository videoRepository;
 
+    /* 강의를 생성하려는 유저가 mentor인지 여부 판별 */
+    @Transactional
+    public void proveMentorRole() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User user = userRepository.findByUsername(username);
+
+        if (user == null) {
+            throw new IllegalArgumentException("User not found: " + username);
+        }
+
+        if (!hasMentorAuthority(user)) {
+            throw new AccessDeniedException("You do not have permission to create lessons");
+        }
+    }
+
+    /* 강의 생성 */
+    @Transactional
     public void createCourse(CourseCreateDto courseCreateDto) {
 
         // user가 null 또는 강의 생성 권한이 없을 때 예외 발생
@@ -34,21 +61,14 @@ public class CourseService {
         }
 
         // type이 null인 경우 예외 발생
-        Type type = typeRepository.findBytype(courseCreateDto.getTypeName());
+        Type type = typeRepository.findBytype(courseCreateDto.getType());
         if (type == null) {
             throw new IllegalArgumentException("강의의 타입이 선택되지 않았습니다.");
         }
 
-        // Create lecture video list
-        List<VideoCreateDto> videoListDto = courseCreateDto.getVideoList();
-        List<Video> videoList = videoListDto.stream()
-                .map(videoCreateDto -> Video.builder()
-                        .title(videoCreateDto.getTitle())
-                        .source(videoCreateDto.getSource())
-                        .totalLength(videoCreateDto.getTotalLength())
-                        .videoStatus(VideoStatus.ACTIVE)
-                        .build())
-                .collect(Collectors.toList());
+        if (courseCreateDto.getVideoList() == null) {
+            courseCreateDto.setVideoList(new ArrayList<>()); // Initialize an empty list
+        }
 
         // 필요한 정보 입력하면서 강의 생성
         Course newCourse = Course.builder()
@@ -57,33 +77,31 @@ public class CourseService {
                 .title(courseCreateDto.getTitle())
                 .description(courseCreateDto.getDescription())
                 .price(courseCreateDto.getPrice())
-                .videoList(videoList)
-                .courseStatus(CourseStatus.READY)
+                .courseStatus(CourseStatus.ACTIVE) // 원래 READY여야 하지만 테스트를 위해 ACTIVE로 변경
                 .build();
 
-//        // 업로드할 강의영상에 대한 정보
-//        List<VideoCreateDto> videoList = courseCreateDto.getVideoList();
-//        for (VideoCreateDto videoCreateDto : videoList) {
-//            String videoTitle = videoCreateDto.getTitle();
-//            String videoSource = videoCreateDto.getSource();
-//            int videoTotalLength = videoCreateDto.getTotalLength();
-//
-//            // 필요한 정보 입력하면서 강의영상 생성(업로드)
-//            Video video = Video.builder()
-//                    .course(newCourse) // 강의 영상이 담길 강의를 지정
-//                    .title(videoTitle)
-//                    .source(videoSource)
-//                    .totalLength(videoTotalLength)
-//                    .videoStatus(VideoStatus.ACTIVE)
-//                    .build();
-//
-//            // Add the video to the course's video list
-//            newCourse.addVideo(video);
-//        }
+        Course savedCourse = courseRepository.save(newCourse);
 
-        courseRepository.save(newCourse);
+        // 강의영상 생성을 위한 정보 입력
+        List<VideoCreateDto> videoListDto = courseCreateDto.getVideoList();
+        List<Video> videoList = new ArrayList<>();
+
+        for (VideoCreateDto videoCreateDto : videoListDto) {
+            Video video = Video.builder()
+                    .course(savedCourse)
+                    .title(videoCreateDto.getTitle())
+                    .source(videoCreateDto.getSource())
+                    .totalLength(videoCreateDto.getTotalLength())
+                    .videoStatus(VideoStatus.ACTIVE)
+                    .build();
+            videoList.add(video);
+        }
+
+        // 강의영상 저장
+        List<Video> savedVideos = videoRepository.saveAll(videoList);
     }
 
+    /* 유저가 mentor 권한을 가지고 있는지 여부 */
     private boolean hasMentorAuthority(User user) {
         for (Authority authority : user.getAuthorities()) {
             if ("ROLE_MENTOR".equals(authority.getName())) {
@@ -93,4 +111,24 @@ public class CourseService {
         return false;
     }
 
+    /* 모든 강의 리스트 */
+    public List<Course> getAllCourses() {
+        return courseRepository.findByCourseStatus(CourseStatus.ACTIVE);
+    }
+
+    /* 개별 강의 페이지 */
+    @Transactional
+    public Course getCourse(Long courseId) {
+        Optional<Course> optionalCourse = courseRepository.findById(courseId);
+        if (optionalCourse.isPresent()) {
+            Course course = optionalCourse.get();
+            if (course.getCourseStatus() == CourseStatus.ACTIVE) {
+                return course;
+            } else {
+                throw new CourseNotFoundException("강의가 존재하지 않습니다.");
+            }
+        } else {
+            throw new CourseNotFoundException("강의가 존재하지 않습니다.");
+        }
+    }
 }
