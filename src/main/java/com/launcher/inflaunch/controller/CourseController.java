@@ -72,4 +72,12 @@ public class CourseController {
         return "redirect:/courses";
     }
 
+    /* 전체 강의 리스트 페이지 */
+    @GetMapping
+    public String showCourseList(Model model) {
+        List<Course> courses = courseService.getAllCourses();
+        model.addAttribute("courses", courses);
+        return "course/courses"; // Without the file extension (.html)
+    }
+
 }

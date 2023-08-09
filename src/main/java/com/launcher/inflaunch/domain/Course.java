@@ -7,6 +7,7 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -35,21 +36,33 @@ public class Course extends BaseEntity{
     @Column(nullable = false)
     private int price;
 
-    @OneToMany(mappedBy = "course" ,  cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
-    @Builder.Default
+//    @Builder.Default
     private List<Video> videoList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "course",  cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "course")
     @ToString.Exclude
     @Builder.Default
     private List<Review> reviewList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "course",  cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "course")
     @ToString.Exclude
     @Builder.Default
     private List<Cart> cartList = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private CourseStatus courseStatus;
+
+    public CourseStatus getCourseStatus() {
+        return this.courseStatus;
+    }
+
+    public Course(Long id, Type type, String title, String description, int price) {
+        this.id = id;
+        this.type = type;
+        this.title = title;
+        this.description = description;
+        this.price = price;
+    }
 }

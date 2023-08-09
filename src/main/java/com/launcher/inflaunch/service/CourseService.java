@@ -30,6 +30,7 @@ public class CourseService {
     private final TypeRepository typeRepository;
     private final VideoRepository videoRepository;
 
+    /* 강의를 생성하려는 유저가 mentor인지 여부 판별 */
     @Transactional
     public void proveMentorRole() {
 
@@ -47,6 +48,7 @@ public class CourseService {
         }
     }
 
+    /* 강의 생성 */
     @Transactional
     public void createCourse(CourseCreateDto courseCreateDto) {
 
@@ -97,6 +99,7 @@ public class CourseService {
         List<Video> savedVideos = videoRepository.saveAll(videoList);
     }
 
+    /* 유저가 mentor 권한을 가지고 있는지 여부 */
     private boolean hasMentorAuthority(User user) {
         for (Authority authority : user.getAuthorities()) {
             if ("ROLE_MENTOR".equals(authority.getName())) {
@@ -104,6 +107,11 @@ public class CourseService {
             }
         }
         return false;
+    }
+
+    /* 모든 강의 불러오기 */
+    public List<Course> getAllCourses() {
+        return courseRepository.findByCourseStatus(CourseStatus.ACTIVE);
     }
 
 }
