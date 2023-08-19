@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Reported Reviews</title>
+  <style>
+    .active-button {
+      color: green;
+      cursor: pointer;
+    }
+    .inactive-button {
+      color: gray;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Reported Reviews</h1>
+
+<table>
+  <thead>
+  <tr>
+    <th>Review ID</th>
+    <th>Review Content</th>
+    <th>Number of Report Reviews</th>
+    <th>Review Status</th>
+    <th>Report Reviews</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="reportedReview : ${reportedReviews}">
+    <td th:text="${reportedReview.id}"></td>
+    <td th:text="${reportedReview.reviewWrite}"></td>
+    <td th:text="${reportedReview.reportCount}"></td>
+    <td th:text="${reportedReview.reviewStatus}"></td>
+    <td>
+      <ul>
+        <li th:each="reportReview : ${reportedReview.reportReviews}">
+          Report Review ID: <span th:text="${reportReview.id}"></span> |
+          Content: <span th:text="${reportReview.content}"></span>
+        </li>
+      </ul>
+    </td>
+    <td>
+      <form th:action="@{/admin/delete-review/{reviewId}(reviewId=${reportedReview.id})}" method="post">
+        <button type="submit" class="active-button">Delete</button>
+      </form>
+      <form th:if="${reportedReview.reviewStatus != 'ACTIVE'}"
+            th:action="@{/admin/activate-review/{reviewId}(reviewId=${reportedReview.id})}" method="post">
+        <button type="submit" class="active-button">Activate</button>
+      </form>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

@@ -38,5 +38,34 @@
 </div>
 
 <a href="/courses">강의리스트로 돌아가기</a>
+
+<!--<h3>수강평 작성</h3>-->
+<!--<form th:action="@{/courses/{courseId}/reviews/new(courseId=${course.id})}" method="post" th:object="${reviewCreateDto}">-->
+<!--  <div>-->
+<!--    <label for="rate">평점:</label>-->
+<!--    <input type="number" id="rate" name="rate" value="" />성-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <label for="reviewWrite">Review:</label>-->
+<!--    <textarea id="reviewWrite" name="reviewWrite" th:field="*{reviewWrite}" /></textarea>-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <label for="advantage">Advantage:</label>-->
+<!--    <select id="advantage" name="advantage" th:field="*{advantage}" />-->
+<!--      <option th:each="advantage : ${T(your.package.name.Advantage).values()}" th:value="${advantage}" th:text="${advantage.getAdv()}"></option>-->
+<!--    </select>-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <label for="disadvantage">Disadvantage:</label>-->
+<!--    <select id="disadvantage" name="disadvantage" th:field="*{disadvantage}" />-->
+<!--      <option th:each="disadvantage : ${T(your.package.name.Disadvantage).values()}" th:value="${disadvantage}" th:text="${disadvantage.getDisadv()}"></option>-->
+<!--    </select>-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <input type="hidden" name="courseId" th:value="${reviewCreateDto.courseId}" />-->
+<!--  </div>-->
+<!--  <button type="submit">수강평 등록</button>-->
+<!--</form>-->
+
 </body>
 </html>

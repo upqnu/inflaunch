@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Delete Course</title>
+</head>
+<body>
+<h1>강의 삭제</h1>
+<form th:action="@{/courses/{id}/delete(id=${courseId})}" method="post">
+  <p>정말 강의를 삭제하시겠습니까?</p>
+  <button type="submit">강의 삭제</button>
+</form>
+</body>
+</html>

@@ -4,6 +4,8 @@ import com.launcher.inflaunch.domain.Course;
 import com.launcher.inflaunch.domain.Type;
 import com.launcher.inflaunch.domain.User;
 import com.launcher.inflaunch.dto.CourseCreateDto;
+import com.launcher.inflaunch.dto.CoursePatchDto;
+import com.launcher.inflaunch.dto.VideoCreateDto;
 import com.launcher.inflaunch.exception.CourseNotFoundException;
 import com.launcher.inflaunch.repository.TypeRepository;
 import com.launcher.inflaunch.repository.UserRepository;
@@ -17,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -35,7 +38,7 @@ public class CourseController {
     /* 강의 생성 정보를 입력하는 폼으로 이동 */
     @GetMapping("/new")
     @PreAuthorize("hasAuthority('ROLE_MENTOR')")
-    public String showCourseCreateForm(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+    public String showCourseCreateForm(Model model, RedirectAttributes redirectAttributes) {
 
         try {
             courseService.proveMentorRole();
@@ -106,4 +109,58 @@ public class CourseController {
         }
     }
 
+    /* 강의 수정 폼으로 이동 */
+    @GetMapping("/{id}/edit")
+    public String showEditCourseForm(@PathVariable Long id, Model model) {
+        Course course = courseService.getCourse(id);
+        List<Type> allTypes = typeRepository.findAll();
+
+        model.addAttribute("course", course);
+        model.addAttribute("allTypes", allTypes);
+        model.addAttribute("type", course.getType());
+
+        return "course/edit-course";
+    }
+
+    /* 강의 수정 */
+    @PatchMapping("/{id}/edit")
+    public String editCourse(@PathVariable Long id, @ModelAttribute CoursePatchDto coursePatchDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                System.out.println("Field: " + error.getField() + " - Error: " + error.getDefaultMessage());
+            }
+            // You can also add more specific error handling here if needed
+            return "course/course-page"; // Redirect to an error page or handle the errors as per your application's design
+        }
+
+        System.out.println("CoursePatchDto: " + coursePatchDto);
+
+        // Print the videoList
+        if (coursePatchDto.getVideoList() != null) {
+            for (VideoCreateDto video : coursePatchDto.getVideoList()) {
+                System.out.println("Video Title: " + video.getTitle());
+                System.out.println("Video Source: " + video.getSource());
+                System.out.println("Video Total Length: " + video.getTotalLength());
+            }
+        } else {
+            System.out.println("Video List is null");
+        }
+
+        courseService.updateCourse(id, coursePatchDto);
+        return "course/course-page";
+    }
+
+    /* 강의 삭제 폼으로 이동 */
+    @GetMapping("/{id}/delete")
+    public String showDeleteCourse(@PathVariable Long id, Model model) {
+        model.addAttribute("courseId", id);
+        return "course/delete-course";
+    }
+
+    /* 강의 삭제 */
+    @PostMapping("/{id}/delete")
+    public String deleteCourse(@PathVariable Long id) {
+        courseService.deleteCourse(id);
+        return "redirect:/course/courses";
+    }
 }

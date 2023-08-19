@@ -1,6 +1,5 @@
 package com.launcher.inflaunch.domain;
 import com.launcher.inflaunch.enum_status.CourseStatus;
-import com.launcher.inflaunch.enum_status.VideoStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,7 +37,6 @@ public class Course extends BaseEntity{
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
-//    @Builder.Default
     private List<Video> videoList = new ArrayList<>();
 
     @OneToMany(mappedBy = "course")

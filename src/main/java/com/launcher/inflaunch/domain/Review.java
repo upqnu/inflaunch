@@ -10,6 +10,7 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,6 +22,11 @@ public class Review extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @ToString.Exclude
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "course_id")
@@ -45,4 +51,14 @@ public class Review extends BaseEntity {
     @ToString.Exclude
     @Builder.Default
     private List<ReportReview> reportReviewList = new ArrayList<>();
+
+    private Integer reportCount;
+
+    public void incrementReportCount() {
+        this.reportCount++;
+    }
+
+    public void updateReviewStatus(ReviewStatus newStatus) {
+        this.reviewStatus = newStatus;
+    }
 }

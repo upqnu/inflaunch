@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Delete Course Review</title>
+</head>
+<body>
+
+<h1>수강평 삭제</h1>
+
+<p>이 수강평을 삭제하시겠습니까?</p>
+
+<form th:action="@{/courses/{courseId}/reviews/{reviewId}/delete(courseId=${courseId}, reviewId=${reviewId})}"
+      method="post">
+  <input type="hidden" name="courseId" th:value="${courseId}" />
+  <input type="hidden" name="reviewId" th:value="${reviewId}" />
+  <button type="submit">수강평 삭제</button>
+</form>
+
+<a th:href="@{/courses/{courseId}/reviews(courseId=${courseId})}">삭제 취소</a>
+
+</body>
+</html>

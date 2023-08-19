@@ -2,6 +2,8 @@ package com.launcher.inflaunch.service;
 
 import com.launcher.inflaunch.domain.*;
 import com.launcher.inflaunch.dto.CourseCreateDto;
+import com.launcher.inflaunch.dto.CourseMapper;
+import com.launcher.inflaunch.dto.CoursePatchDto;
 import com.launcher.inflaunch.dto.VideoCreateDto;
 import com.launcher.inflaunch.enum_status.CourseStatus;
 import com.launcher.inflaunch.enum_status.VideoStatus;
@@ -31,6 +33,8 @@ public class CourseService {
     private final UserRepository userRepository;
     private final TypeRepository typeRepository;
     private final VideoRepository videoRepository;
+    private final CourseMapper courseMapper;
+
 
     /* 강의를 생성하려는 유저가 mentor인지 여부 판별 */
     @Transactional
@@ -42,11 +46,11 @@ public class CourseService {
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
-            throw new IllegalArgumentException("User not found: " + username);
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다: " + username);
         }
 
         if (!hasMentorAuthority(user)) {
-            throw new AccessDeniedException("You do not have permission to create lessons");
+            throw new AccessDeniedException("강의를 생성할 권한이 없습니다.");
         }
     }
 
@@ -120,6 +124,7 @@ public class CourseService {
     @Transactional
     public Course getCourse(Long courseId) {
         Optional<Course> optionalCourse = courseRepository.findById(courseId);
+
         if (optionalCourse.isPresent()) {
             Course course = optionalCourse.get();
             if (course.getCourseStatus() == CourseStatus.ACTIVE) {
@@ -130,5 +135,72 @@ public class CourseService {
         } else {
             throw new CourseNotFoundException("강의가 존재하지 않습니다.");
         }
+    }
+
+    /* 강의 수정 */
+    @Transactional
+    public void updateCourse(Long courseId, CoursePatchDto coursePatchDto) {
+        Course existingCourse = courseRepository.findById(courseId)
+                .orElseThrow(() -> new CourseNotFoundException(courseId + " 번 id의 강의가 존재하지 않습니다."));
+
+        if (existingCourse.getCourseStatus() != CourseStatus.ACTIVE) {
+            throw new IllegalArgumentException("이 강의는 수정이 불가능한 상태입니다.");
+        }
+
+        User currentUser = getCurrentUser();
+        if (!hasAdminAuthority(currentUser) && !existingCourse.getUser().equals(currentUser)) {
+            throw new IllegalArgumentException("이 강의를 수정할 권한이 없습니다.");
+        }
+
+        Course updatedCourse = courseMapper.coursePatchDtoToCourse(coursePatchDto, existingCourse);
+
+        courseRepository.save(updatedCourse);
+    }
+
+    /* 유저가 admin 권한을 가지고 있는지 여부 */
+    @Transactional
+    public boolean hasAdminAuthority(User user) {
+        for (Authority authority : user.getAuthorities()) {
+            if ("ROLE_ADMIN".equals(authority.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /* 로그인한 유저 여부 확인 */
+    @Transactional
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null; // No user authenticated or anonymous user
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User) {
+            return (User) principal;
+        }
+
+        return null;
+    }
+
+    /* 강의 삭제 */
+    @Transactional
+    public void deleteCourse(Long courseId) {
+
+        Course existingCourse = courseRepository.findById(courseId)
+                .orElseThrow(() -> new CourseNotFoundException(courseId + " 번 id의 강의가 존재하지 않습니다."));
+
+        if (existingCourse.getCourseStatus() != CourseStatus.ACTIVE) {
+            throw new IllegalArgumentException("이 강의는 삭제가 불가능한 상태입니다.");
+        }
+
+        User currentUser = getCurrentUser();
+        if (!hasAdminAuthority(currentUser) && !existingCourse.getUser().equals(currentUser)) {
+            throw new IllegalArgumentException("이 강의를 삭제할 권한이 없습니다.");
+        }
+
+        Course deletedCourse = courseMapper.courseDeleteDtoToCourse(existingCourse);
+        courseRepository.save(deletedCourse);
     }
 }
