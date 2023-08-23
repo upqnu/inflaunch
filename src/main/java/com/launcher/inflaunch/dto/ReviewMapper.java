@@ -34,13 +34,6 @@ public class ReviewMapper {
 
     public Review reviewDeleteDtoToReview(Review existingReview) {
         return Review.builder()
-                .id(existingReview.getId())
-                .user(existingReview.getUser())
-                .course(existingReview.getCourse())
-                .rate(existingReview.getRate())
-                .reviewWrite(existingReview.getReviewWrite())
-                .advantage(existingReview.getAdvantage())
-                .disadvantage(existingReview.getDisadvantage())
                 .reviewStatus(ReviewStatus.DELETED)
                 .build();
     }

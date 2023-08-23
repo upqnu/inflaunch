@@ -59,7 +59,7 @@ public class ReviewController {
 
         if (result.hasErrors()) {
             // 유효성 검사 오류 처리
-            return "course/course-page";
+            return "course/create-review";
         }
 
         reviewCreateDto.setCourseId(courseId);

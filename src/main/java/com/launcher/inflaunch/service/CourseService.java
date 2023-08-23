@@ -58,7 +58,7 @@ public class CourseService {
     @Transactional
     public void createCourse(CourseCreateDto courseCreateDto) {
 
-        // user가 null 또는 강의 생성 권한이 없을 때 예외 발생
+        // user가 null 또는 강의 생성 권한이 없을 때(Mentor가 아니라면) 예외 발생
         User user = userRepository.findById(courseCreateDto.getUserId()).orElse(null);
         if (user == null || !hasMentorAuthority(user)) {
             throw new IllegalArgumentException("강의를 생성할 권한이 없습니다.");
@@ -70,8 +70,9 @@ public class CourseService {
             throw new IllegalArgumentException("강의의 타입이 선택되지 않았습니다.");
         }
 
+        // 입력된 강의영상 정보가 없으면 빈 목록으로 초기화
         if (courseCreateDto.getVideoList() == null) {
-            courseCreateDto.setVideoList(new ArrayList<>()); // Initialize an empty list
+            courseCreateDto.setVideoList(new ArrayList<>());
         }
 
         // 필요한 정보 입력하면서 강의 생성
@@ -88,21 +89,27 @@ public class CourseService {
 
         // 강의영상 생성을 위한 정보 입력
         List<VideoCreateDto> videoListDto = courseCreateDto.getVideoList();
-        List<Video> videoList = new ArrayList<>();
+        if (videoListDto != null && !videoListDto.isEmpty()) {
+            List<Video> videoList = new ArrayList<>();
 
-        for (VideoCreateDto videoCreateDto : videoListDto) {
-            Video video = Video.builder()
-                    .course(savedCourse)
-                    .title(videoCreateDto.getTitle())
-                    .source(videoCreateDto.getSource())
-                    .totalLength(videoCreateDto.getTotalLength())
-                    .videoStatus(VideoStatus.ACTIVE)
-                    .build();
-            videoList.add(video);
+            for (VideoCreateDto videoCreateDto : videoListDto) {
+                Video video = Video.builder()
+                        .course(savedCourse)
+                        .title(videoCreateDto.getTitle())
+                        .source(videoCreateDto.getSource())
+                        .totalLength(videoCreateDto.getTotalLength())
+                        .videoStatus(VideoStatus.ACTIVE)
+                        .build();
+                videoList.add(video);
+            }
+
+            List<Video> savedVideos = videoRepository.saveAll(videoList);
+//            savedCourse.getVideoList().addAll(savedVideos);
+            for (Video video : savedVideos) {
+                savedCourse.addVideo(video);
+            }
         }
 
-        // 강의영상 저장
-        List<Video> savedVideos = videoRepository.saveAll(videoList);
     }
 
     /* 유저가 mentor 권한을 가지고 있는지 여부 */
@@ -161,7 +168,7 @@ public class CourseService {
     @Transactional
     public boolean hasAdminAuthority(User user) {
         for (Authority authority : user.getAuthorities()) {
-            if ("ROLE_ADMIN".equals(authority.getName())) {
+            if ((authority.getName()).equals("ROLE_ADMIN")) {
                 return true;
             }
         }

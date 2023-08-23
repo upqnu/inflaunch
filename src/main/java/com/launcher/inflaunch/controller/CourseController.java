@@ -13,6 +13,7 @@ import com.launcher.inflaunch.service.CourseService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,6 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/courses")
+@Slf4j
 public class CourseController {
 
     private final CourseService courseService;
@@ -49,7 +51,7 @@ public class CourseController {
             model.addAttribute("courseCreateDto", new CourseCreateDto());
 
             for (Type type : types) {
-                System.out.println("Type: " + type.getType());
+                log.info("Type: {}" + type.getType());
             }
 
             return "course/create-course";
@@ -127,23 +129,24 @@ public class CourseController {
     public String editCourse(@PathVariable Long id, @ModelAttribute CoursePatchDto coursePatchDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             for (FieldError error : bindingResult.getFieldErrors()) {
-                System.out.println("Field: " + error.getField() + " - Error: " + error.getDefaultMessage());
+                log.info("Field: {} - Error: {}", error.getField(), error.getDefaultMessage());
             }
-            // You can also add more specific error handling here if needed
-            return "course/course-page"; // Redirect to an error page or handle the errors as per your application's design
+            // 필요한 경우 에러 처리 방법을 추가
+            return "course/course-page";
         }
 
-        System.out.println("CoursePatchDto: " + coursePatchDto);
+        // coursePatchDto  객체를 출력하여 해당 객체의 내용을 확인
+        log.info("CoursePatchDto: {}", coursePatchDto);
 
         // Print the videoList
         if (coursePatchDto.getVideoList() != null) {
             for (VideoCreateDto video : coursePatchDto.getVideoList()) {
-                System.out.println("Video Title: " + video.getTitle());
-                System.out.println("Video Source: " + video.getSource());
-                System.out.println("Video Total Length: " + video.getTotalLength());
+                log.info("Video Title: {}", video.getTitle());
+                log.info("Video Source: {}", video.getSource());
+                log.info("Video Total Length: {}", video.getTotalLength());
             }
         } else {
-            System.out.println("Video List is null");
+            log.info("Video List is null");
         }
 
         courseService.updateCourse(id, coursePatchDto);

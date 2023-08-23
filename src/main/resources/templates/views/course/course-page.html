@@ -43,11 +43,11 @@
 <!--<form th:action="@{/courses/{courseId}/reviews/new(courseId=${course.id})}" method="post" th:object="${reviewCreateDto}">-->
 <!--  <div>-->
 <!--    <label for="rate">평점:</label>-->
-<!--    <input type="number" id="rate" name="rate" value="" />성-->
+<!--    <input type="number" id="rate" name="rate" value="" />-->
 <!--  </div>-->
 <!--  <div>-->
 <!--    <label for="reviewWrite">Review:</label>-->
-<!--    <textarea id="reviewWrite" name="reviewWrite" th:field="*{reviewWrite}" /></textarea>-->
+<!--    <textarea id="reviewWrite" name="reviewWrite" th:field="${reviewCreateDto.reviewWrite}" /></textarea>-->
 <!--  </div>-->
 <!--  <div>-->
 <!--    <label for="advantage">Advantage:</label>-->

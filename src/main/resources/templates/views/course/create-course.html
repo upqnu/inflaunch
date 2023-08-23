@@ -37,23 +37,95 @@
   <br>
 
   <!-- Video information section -->
-  <label for="videoTitle">강의영상 제목 :</label>
-  <input type="text" id="videoTitle" th:field="*{videoList[0].title}">
-  <br>
+  <div id="videoContainer">
+    <div id="video0">
+      <h3>[강의 영상]</h3>
+      <label for="videoTitle0">비디오 제목:</label>
+      <input type="text" id="videoTitle0" name="videoList[0].title" required>
+      <br>
 
-  <label for="videoLength">강의영상 재생시간(초):</label>
-  <input type="number" id="videoLength" th:field="*{videoList[0].totalLength}">
-  <br>
+      <label for="videoLength0">비디오 재생시간(초):</label>
+      <input type="number" id="videoLength0" name="videoList[0].totalLength" required>
+      <br>
 
-  <label for="videoSource">강의영상 저장 URL:</label>
-  <input type="text" id="videoSource" th:field="*{videoList[0].source}">
+      <label for="videoSource0">비디오 저장 URL:</label>
+      <input type="text" id="videoSource0" name="videoList[0].source" required>
+      <br>
+    </div>
+  </div>
+
+  <button type="button" onclick="addVideo()">비디오 추가</button>
   <br>
 
   <button type="submit">강의 생성</button>
 </form>
 
-<div th:if="${courseCreated}" class="success-message">
-  <span>강의가 성공적으로 생성되었습니다.</span>
-</div>
+<script>
+  var videoCount = 1;
+
+  function addVideo() {
+    var videoContainer = document.getElementById("videoContainer");
+
+    var videoDiv = document.createElement("div");
+    videoDiv.id = "video" + videoCount;
+
+    var videoHeading = document.createElement("h3");
+    videoHeading.textContent = "비디오 " + videoCount;
+
+    var videoTitleLabel = document.createElement("label");
+    videoTitleLabel.setAttribute("for", "videoTitle" + videoCount);
+    videoTitleLabel.textContent = "비디오 제목:";
+
+    var videoTitleInput = document.createElement("input");
+    videoTitleInput.type = "text";
+    videoTitleInput.id = "videoTitle" + videoCount;
+    videoTitleInput.name = "videoList[" + (videoCount - 1) + "].title";
+    videoTitleInput.required = true;
+
+    var videoLengthLabel = document.createElement("label");
+    videoLengthLabel.setAttribute("for", "videoLength" + videoCount);
+    videoLengthLabel.textContent = "비디오 재생시간(초):";
+
+    var videoLengthInput = document.createElement("input");
+    videoLengthInput.type = "number";
+    videoLengthInput.id = "videoLength" + videoCount;
+    videoLengthInput.name = "videoList[" + (videoCount - 1) + "].totalLength";
+    videoLengthInput.required = true;
+
+    var videoSourceLabel = document.createElement("label");
+    videoSourceLabel.setAttribute("for", "videoSource" + videoCount);
+    videoSourceLabel.textContent = "비디오 저장 URL:";
+
+    var videoSourceInput = document.createElement("input");
+    videoSourceInput.type = "text";
+    videoSourceInput.id = "videoSource" + videoCount;
+    videoSourceInput.name = "videoList[" + (videoCount - 1) + "].source";
+    videoSourceInput.required = true;
+
+    videoDiv.appendChild(videoHeading);
+    videoDiv.appendChild(videoTitleLabel);
+    videoDiv.appendChild(videoTitleInput);
+    videoDiv.appendChild(document.createElement("br"));
+    videoDiv.appendChild(videoLengthLabel);
+    videoDiv.appendChild(videoLengthInput);
+    videoDiv.appendChild(document.createElement("br"));
+    videoDiv.appendChild(videoSourceLabel);
+    videoDiv.appendChild(videoSourceInput);
+    videoDiv.appendChild(document.createElement("br"));
+
+    videoContainer.appendChild(videoDiv);
+
+    // courseCreateDto 객체의 videoList에 비디오를 추가
+    var courseCreateDto = document.querySelector('[th:object]');
+    var video = {
+      title: videoTitleInput.value,
+      totalLength: videoLengthInput.value,
+      source: videoSourceInput.value
+    };
+    courseCreateDto.value.videoList.push(video);
+
+    videoCount++;
+  }
+</script>
 </body>
 </html>

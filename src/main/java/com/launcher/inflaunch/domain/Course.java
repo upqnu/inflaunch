@@ -36,7 +36,7 @@ public class Course extends BaseEntity{
     private int price;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
+//    @ToString.Exclude
     private List<Video> videoList = new ArrayList<>();
 
     @OneToMany(mappedBy = "course")
@@ -63,4 +63,17 @@ public class Course extends BaseEntity{
         this.description = description;
         this.price = price;
     }
+
+    public void addVideo(Video video) {
+        if (videoList == null) {
+            videoList = new ArrayList<>();
+        }
+        videoList.add(video);
+    }
+    // @ToString.Exclude가 반드시 필요하지 않다면 -> videoList에서 @ToString.Exclude는 삭제하고 위 getter도 삭제
+
+    public List<Video> getVideoList() {
+        return this.videoList;
+    }
+    // @ToString.Exclude가 반드시 필요하지 않다면 -> videoList에서 @ToString.Exclude는 삭제하고 위 getter도 삭제
 }

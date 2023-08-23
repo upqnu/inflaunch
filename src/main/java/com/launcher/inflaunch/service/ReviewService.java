@@ -106,23 +106,11 @@ public class ReviewService {
 
             reviewRepository.save(updatedReview);
 
-            System.out.println(updatedReview + "업데이트");
-        } catch (Exception e) {
-            System.err.println(reviewId + "에러");
-            e.printStackTrace();
+            log.info(updatedReview + " Updated");
+        } catch (ReviewNotFoundException e) {
+            log.error(reviewId + " 번 id의 수강평이 존재하지 않습니다.", e);
         }
     }
-
-//    /* 유저가 admin 권한을 가지고 있는지 여부 */
-//    @Transactional
-//    public boolean hasAdminAuthority(User user) {
-//        for (Authority authority : user.getAuthorities()) {
-//            if ("ROLE_ADMIN".equals(authority.getName())) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
 
     /* 로그인한 유저 여부 확인 */
     @Transactional

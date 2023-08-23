@@ -16,17 +16,17 @@
 </head>
 <body>
 
-<h1>Reported Reviews</h1>
+<h1>수강평 신고 현황</h1>
 
 <table>
   <thead>
   <tr>
-    <th>Review ID</th>
-    <th>Review Content</th>
-    <th>Number of Report Reviews</th>
-    <th>Review Status</th>
-    <th>Report Reviews</th>
-    <th>Actions</th>
+    <th>수강평 ID</th>
+    <th>수강평 내용</th>
+    <th>수강평 신고 횟수</th>
+    <th>수강평 Status</th>
+    <th>수강평 신고 정보</th>
+    <th>수강평 처리</th>
   </tr>
   </thead>
   <tbody>
@@ -38,18 +38,18 @@
     <td>
       <ul>
         <li th:each="reportReview : ${reportedReview.reportReviews}">
-          Report Review ID: <span th:text="${reportReview.id}"></span> |
-          Content: <span th:text="${reportReview.content}"></span>
+          수강평 신고 ID: <span th:text="${reportReview.id}"></span> |
+          신고 사유: <span th:text="${reportReview.content}"></span>
         </li>
       </ul>
     </td>
     <td>
       <form th:action="@{/admin/delete-review/{reviewId}(reviewId=${reportedReview.id})}" method="post">
-        <button type="submit" class="active-button">Delete</button>
+        <button type="submit" class="active-button">수강평 삭제</button>
       </form>
       <form th:if="${reportedReview.reviewStatus != 'ACTIVE'}"
             th:action="@{/admin/activate-review/{reviewId}(reviewId=${reportedReview.id})}" method="post">
-        <button type="submit" class="active-button">Activate</button>
+        <button type="submit" class="active-button">수강평 재노출</button>
       </form>
     </td>
   </tr>

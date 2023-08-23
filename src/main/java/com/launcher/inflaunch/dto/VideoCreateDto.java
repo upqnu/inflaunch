@@ -17,13 +17,10 @@ public class VideoCreateDto {
     @NotNull
     private Long courseId;
 
-    @NotBlank
     private String title;
 
-    @NotBlank
     private String source;
 
-    @NotNull
     @Positive
     private int totalLength;
 }
