@@ -96,7 +96,7 @@ public class CourseService {
     }
 
     /* 유저가 mentor 권한을 가지고 있는지 여부 */
-    private boolean hasMentorAuthority(User user) {
+    public boolean hasMentorAuthority(User user) {
         for (Authority authority : user.getAuthorities()) {
             if ("ROLE_MENTOR".equals(authority.getName())) {
                 return true;

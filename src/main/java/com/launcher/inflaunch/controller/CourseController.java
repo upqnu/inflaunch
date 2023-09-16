@@ -112,29 +112,13 @@ public class CourseController {
             boolean hasReviews = !reviews.isEmpty();
             model.addAttribute("hasReviews", hasReviews);
 
-            // User currentUser = null; // 로그인 여부와 상관 없이 모든 리뷰를 노출하기 때문에 현재 사용자 정보는 필요하지 않음.
-            // model.addAttribute("currentUser", currentUser);
-
             User currentUser = Optional.ofNullable(principal)
                     .map(Principal::getName)
                     .map(userRepository::findByUsername)
                     .orElse(null);
             model.addAttribute("currentUser", currentUser);
-
-//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//            List<String> roles = authentication.getAuthorities().stream()
-//                    .map(GrantedAuthority::getAuthority)
-//                    .collect(Collectors.toList());
-//
-//            model.addAttribute("hasAdminAuthority", roles.contains("ROLE_ADMIN"));
-//            model.addAttribute("hasMentorAuthority", roles.contains("ROLE_MENTOR"));
-//
-//            Optional.ofNullable(authentication.getPrincipal())
-//                    .filter(PrincipalDetails.class::isInstance)
-//                    .map(PrincipalDetails.class::cast)
-//                    .map(PrincipalDetails::getUser)
-//                    .map(User::getId)
-//                    .ifPresent(userId -> model.addAttribute("userId", userId));
+            model.addAttribute("hasMentorAuthority", courseService.hasMentorAuthority(currentUser));
+            model.addAttribute("hasAdminAuthority", courseService.hasAdminAuthority(currentUser));
 
             return "course/course-page";
         } catch (CourseNotFoundException ex) {
@@ -153,10 +137,11 @@ public class CourseController {
         if (authentication.getPrincipal() instanceof PrincipalDetails) {
             PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
             User user = principalDetails.getUser();
-            Long userId = user.getId();
+             Long userId = user.getId();
 
             if (!course.getUser().getId().equals(userId)
-                    && !authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
+                    && !authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))
+                    && !authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_MENTOR"))) {
                 throw new IllegalArgumentException("수정 권한이 없습니다.");
             }
         }
