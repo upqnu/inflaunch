@@ -22,7 +22,7 @@ public class ReportReviewController {
 
     /* 수강평 신고 페이지로 이동 */
     @GetMapping("/{reviewId}/report")
-    public String showReportReview(@PathVariable Long reviewId, Model model) {
+    public String showReportReview(@PathVariable Long courseId, @PathVariable Long reviewId, Model model) {
         Long userId = reportReviewService.getUserIdForReportReviewCreate();
 
         ReportReviewCreateDto reportReviewCreateDto = new ReportReviewCreateDto();
@@ -51,10 +51,10 @@ public class ReportReviewController {
 
             reportReviewService.createReportReview(reportReviewCreateDto, user);
             model.addAttribute("reportReviewCreated", true);
-            return "redirect:/courses/{courseId}/reviews";
+            return "redirect:/courses/{courseId}";
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("error message", "수강평을 신고할 수 없습니다.");
-            return "redirect:/courses/{courseId}/reviews";
+            return "redirect:/courses/{courseId}";
         }
     }
 

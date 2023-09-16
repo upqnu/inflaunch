@@ -4,10 +4,10 @@ import com.launcher.inflaunch.domain.Review;
 import com.launcher.inflaunch.domain.User;
 import com.launcher.inflaunch.dto.ReviewCreateDto;
 import com.launcher.inflaunch.dto.ReviewPatchDto;
-import com.launcher.inflaunch.exception.ReviewNotFoundException;
 import com.launcher.inflaunch.repository.UserRepository;
 import com.launcher.inflaunch.service.ReviewService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Controller
@@ -28,13 +27,14 @@ public class ReviewController {
     private final UserRepository userRepository;
 
     /* 수강평 작성 폼으로 이동 */
-    @GetMapping("/reviews/new")
+    @GetMapping("/newreview")
     public String showCreateReviewForm(@PathVariable Long courseId, Model model, RedirectAttributes redirectAttributes) {
         try {
             reviewService.hasReviewCreateAuthority();
             ReviewCreateDto reviewCreateDto = new ReviewCreateDto();
             reviewCreateDto.setCourseId(courseId);
             model.addAttribute("reviewCreateDto", reviewCreateDto);
+//            model.addAttribute("courseId", courseId);
 
             model.addAttribute("advantageEnum", com.launcher.inflaunch.enum_status.Advantage.values());
             model.addAttribute("disadvantageEnum", com.launcher.inflaunch.enum_status.Disadvantage.values());
@@ -47,7 +47,8 @@ public class ReviewController {
     }
 
     /* 수강평 작성 */
-    @PostMapping("/reviews/new")
+    @PostMapping("/newreview")
+    @PreAuthorize("isAuthenticated()") // 인증된 사용자만 접근 가능하도록 설정
     public String createReview(
             @PathVariable Long courseId,
             @ModelAttribute ReviewCreateDto reviewCreateDto,
@@ -66,28 +67,28 @@ public class ReviewController {
 
         reviewService.createReview(reviewCreateDto, user);
         model.addAttribute("reviewCreated", true);
-        return "redirect:/courses/{courseId}/reviews";
+        return "redirect:/courses/{courseId}";
     }
 
     /* 수강평 리스트*/
-    @GetMapping("/reviews")
-    public String showReviewPage(@PathVariable Long courseId, @RequestParam(required = false) Long reviewId, Model model, Principal principal) {
-        List<Review> reviews = reviewService.getAllReviews(courseId);
-        model.addAttribute("reviews", reviews);
+    // @GetMapping("")
+    // public String showReviewPage(@PathVariable Long courseId, @RequestParam(required = false) Long reviewId, Model model, Principal principal) {
+    //     List<Review> reviews = reviewService.getAllReviews(courseId);
+    //     model.addAttribute("reviews", reviews);
 
-        boolean hasReviews = !reviews.isEmpty();
-        model.addAttribute("hasReviews", hasReviews);
+    //     boolean hasReviews = !reviews.isEmpty();
+    //     model.addAttribute("hasReviews", hasReviews);
 
-        // Get the currently logged in user (if available)
-        User currentUser = null;
-        if (principal != null) {
-            String currentUserName = principal.getName();
-            currentUser = userRepository.findByUsername(currentUserName);
-        }
-        model.addAttribute("currentUser", currentUser);
+    //     // Get the currently logged in user (if available)
+    //     User currentUser = null;
+    //     if (principal != null) {
+    //         String currentUserName = principal.getName();
+    //         currentUser = userRepository.findByUsername(currentUserName);
+    //     }
+    //     model.addAttribute("currentUser", currentUser);
 
-        return "course/review-page";
-    }
+    //     return "course/course-page";
+    // }
 
     /* 수강평 수정 폼으로 이동 */
     @GetMapping("/reviews/{reviewId}/edit")
@@ -104,18 +105,25 @@ public class ReviewController {
         model.addAttribute("review", review);
         model.addAttribute("reviewPatchDto", reviewPatchDto);
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        User currentUser = userRepository.findByUsername(currentPrincipalName);
+
+        model.addAttribute("currentUser", currentUser);
+
         return "course/edit-review";
     }
 
     /* 수강평 수정 */
     @PatchMapping("/reviews/{reviewId}/edit")
-    public String editReview(@PathVariable Long reviewId, @ModelAttribute ReviewPatchDto reviewPatchDto, BindingResult result) {
+    public String editReview(@PathVariable Long courseId, @PathVariable Long reviewId, @ModelAttribute ReviewPatchDto reviewPatchDto, BindingResult result, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             return "course/course-page";
         }
 
         reviewService.updateReview(reviewId, reviewPatchDto);
-        return "redirect:/courses/{courseId}/reviews";
+        redirectAttributes.addAttribute("courseId", courseId);
+        return "redirect:/courses/{courseId}";
     }
 
     /* 수강평 삭제 폼으로 이동*/
@@ -131,7 +139,7 @@ public class ReviewController {
     @PostMapping("/reviews/{reviewId}/delete")
     public String deleteReview(@PathVariable Long reviewId) {
         reviewService.deleteReview(reviewId);
-        return "redirect:/courses/{courseId}/reviews";
+        return "redirect:/courses/{courseId}";
     }
 
 }

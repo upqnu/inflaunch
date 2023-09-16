@@ -8,9 +8,10 @@
 
 <h1>수강평 수정</h1>
 
-<form th:action="@{/courses/{courseId}/reviews/{reviewId}/edit(courseId=${courseId}, reviewId=${review.id})}"
-      method="patch"
+<form th:action="@{/courses/{courseId}/reviews/{reviewId}/edit(courseId=${courseId}, reviewId=${reviewId})}"
+      method="post"
       th:object="${reviewPatchDto}">
+  <input type="hidden" name="_method" value="patch" />
 
   <div>
     <label for="rate">평점:</label>

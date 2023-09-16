@@ -32,7 +32,7 @@ public class ReportReviewService {
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
-            throw new IllegalArgumentException("User not found: " + username);
+            throw new IllegalArgumentException("유저를 찾을 수 없습니다 : " + username);
         }
 
         return user.getId();
@@ -44,6 +44,11 @@ public class ReportReviewService {
         // review가 null인 경우 예외 발생
         Review fakeReview = reviewRepository.findById(reportReviewCreateDto.getReviewId())
                 .orElseThrow(() -> new IllegalArgumentException(reportReviewCreateDto.getReviewId() + "수강평이 존재하지 않습니다."));
+
+        // content가 null인 경우 예외 발생
+        if (reportReviewCreateDto.getContent() == null) {
+            throw new IllegalArgumentException("수강평 신고 내용이 없습니다.");
+        }
 
         // 필요한 정보 입력하면서 수강평 신고 생성
         ReportReview newReportReview = ReportReview.builder()

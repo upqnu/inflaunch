@@ -6,17 +6,18 @@ import com.launcher.inflaunch.dto.CourseMapper;
 import com.launcher.inflaunch.dto.CoursePatchDto;
 import com.launcher.inflaunch.dto.VideoCreateDto;
 import com.launcher.inflaunch.enum_status.CourseStatus;
-import com.launcher.inflaunch.enum_status.VideoStatus;
 import com.launcher.inflaunch.exception.CourseNotFoundException;
 import com.launcher.inflaunch.repository.CourseRepository;
 import com.launcher.inflaunch.repository.TypeRepository;
 import com.launcher.inflaunch.repository.UserRepository;
 import com.launcher.inflaunch.repository.VideoRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,60 +57,42 @@ public class CourseService {
 
     /* 강의 생성 */
     @Transactional
-    public void createCourse(CourseCreateDto courseCreateDto) {
+    public void createCourse(CourseCreateDto courseCreateDto, User authorizedUser) {
 
         // user가 null 또는 강의 생성 권한이 없을 때(Mentor가 아니라면) 예외 발생
-        User user = userRepository.findById(courseCreateDto.getUserId()).orElse(null);
-        if (user == null || !hasMentorAuthority(user)) {
+        User checkedUser = userRepository.findById(authorizedUser.getId()).orElse(null);
+        if (checkedUser == null || !hasMentorAuthority(checkedUser)) {
             throw new IllegalArgumentException("강의를 생성할 권한이 없습니다.");
         }
 
         // type이 null인 경우 예외 발생
-        Type type = typeRepository.findBytype(courseCreateDto.getType());
-        if (type == null) {
+        Type inputtedType = typeRepository.findBytype(courseCreateDto.getType());
+        if (inputtedType == null) {
             throw new IllegalArgumentException("강의의 타입이 선택되지 않았습니다.");
         }
 
-        // 입력된 강의영상 정보가 없으면 빈 목록으로 초기화
-        if (courseCreateDto.getVideoList() == null) {
-            courseCreateDto.setVideoList(new ArrayList<>());
+        // title이 이미 존재하는 경우 예외 발생
+        Course existingCourse = courseRepository.findByTitle(courseCreateDto.getTitle());
+        if (existingCourse != null) {
+            throw new IllegalArgumentException("이미 존재하는 제목입니다. 다른 제목으로 수정하세요.");
         }
 
-        // 필요한 정보 입력하면서 강의 생성
-        Course newCourse = Course.builder()
-                .user(user)
-                .type(type)
-                .title(courseCreateDto.getTitle())
-                .description(courseCreateDto.getDescription())
-                .price(courseCreateDto.getPrice())
-                .courseStatus(CourseStatus.ACTIVE) // 원래 READY여야 하지만 테스트를 위해 ACTIVE로 변경
-                .build();
+        // mapper를 통한 새로운 course 생성
+        Course newCourse = courseMapper.courseCreateDtoToCourse(courseCreateDto, checkedUser, inputtedType);
 
-        Course savedCourse = courseRepository.save(newCourse);
-
-        // 강의영상 생성을 위한 정보 입력
         List<VideoCreateDto> videoListDto = courseCreateDto.getVideoList();
+        List<Video> videoList = new ArrayList<>();
         if (videoListDto != null && !videoListDto.isEmpty()) {
-            List<Video> videoList = new ArrayList<>();
-
             for (VideoCreateDto videoCreateDto : videoListDto) {
-                Video video = Video.builder()
-                        .course(savedCourse)
-                        .title(videoCreateDto.getTitle())
-                        .source(videoCreateDto.getSource())
-                        .totalLength(videoCreateDto.getTotalLength())
-                        .videoStatus(VideoStatus.ACTIVE)
-                        .build();
-                videoList.add(video);
-            }
-
-            List<Video> savedVideos = videoRepository.saveAll(videoList);
-//            savedCourse.getVideoList().addAll(savedVideos);
-            for (Video video : savedVideos) {
-                savedCourse.addVideo(video);
+                // 비디오 정보의 필드 값들이 모두 비어있는지 확인
+                if (!videoCreateDto.getTitle().isBlank() && !videoCreateDto.getSource().isBlank() && videoCreateDto.getTotalLength() != null) {
+                    Video video = new Video(videoCreateDto.getTitle(), videoCreateDto.getSource(), videoCreateDto.getTotalLength(), newCourse);
+                    videoList.add(video);
+                }
             }
         }
 
+        courseRepository.save(newCourse);
     }
 
     /* 유저가 mentor 권한을 가지고 있는지 여부 */
@@ -155,11 +138,22 @@ public class CourseService {
         }
 
         User currentUser = getCurrentUser();
-        if (!hasAdminAuthority(currentUser) && !existingCourse.getUser().equals(currentUser)) {
+//        if (!hasAdminAuthority(currentUser) && !existingCourse.getUser().equals(currentUser)) {
+//            throw new IllegalArgumentException("이 강의를 수정할 권한이 없습니다.");
+//        }
+//        if (!hasAdminAuthority(currentUser) &&
+//                !(existingCourse.getUser() != null && existingCourse.getUser().getId().equals(currentUser.getId()))) {
+//            throw new IllegalArgumentException("이 강의를 수정할 권한이 없습니다.");
+//        }
+        if (currentUser == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
+        if (!hasAdminAuthority(currentUser) && (existingCourse.getUser() == null || !existingCourse.getUser().getId().equals(currentUser.getId()))) {
             throw new IllegalArgumentException("이 강의를 수정할 권한이 없습니다.");
         }
 
-        Course updatedCourse = courseMapper.coursePatchDtoToCourse(coursePatchDto, existingCourse);
+        Course updatedCourse = courseMapper.coursePatchDtoToCourse(coursePatchDto, existingCourse, currentUser);
 
         courseRepository.save(updatedCourse);
     }
@@ -184,10 +178,10 @@ public class CourseService {
         }
 
         Object principal = authentication.getPrincipal();
-        if (principal instanceof User) {
-            return (User) principal;
+        if (principal instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) principal;
+            return userRepository.findByUsername(userDetails.getUsername());
         }
-
         return null;
     }
 
@@ -202,12 +196,7 @@ public class CourseService {
             throw new IllegalArgumentException("이 강의는 삭제가 불가능한 상태입니다.");
         }
 
-        User currentUser = getCurrentUser();
-        if (!hasAdminAuthority(currentUser) && !existingCourse.getUser().equals(currentUser)) {
-            throw new IllegalArgumentException("이 강의를 삭제할 권한이 없습니다.");
-        }
-
-        Course deletedCourse = courseMapper.courseDeleteDtoToCourse(existingCourse);
-        courseRepository.save(deletedCourse);
+        existingCourse.setCourseStatus(CourseStatus.DELETED);
+        courseRepository.save(existingCourse);
     }
 }

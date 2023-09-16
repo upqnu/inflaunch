@@ -54,7 +54,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/admin/categori",
                                 "/admin/income",
-                                "/admin/income/detail"
+                                "/admin/income/detail",
+                                "/admin/report-reviews",
+                                "/courses/*/delete"
                         ).hasAnyAuthority("ROLE_ADMIN")
                         .requestMatchers(
                                 "/student/courses",

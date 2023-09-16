@@ -4,9 +4,12 @@ import com.launcher.inflaunch.domain.Category;
 import com.launcher.inflaunch.domain.ReportReview;
 import com.launcher.inflaunch.domain.Type;
 import com.launcher.inflaunch.domain.User;
+import com.launcher.inflaunch.dto.ReportReviewInfoDto;
+import com.launcher.inflaunch.enum_status.ReviewStatus;
 import com.launcher.inflaunch.repository.ReportReviewRepository;
 import com.launcher.inflaunch.repository.ReviewRepository;
 import com.launcher.inflaunch.repository.UserRepository;
+import com.launcher.inflaunch.service.AdminService;
 import com.launcher.inflaunch.service.ReportReviewService;
 import com.launcher.inflaunch.service.TypeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +27,19 @@ import java.util.List;
 public class AdminController {
 
     private TypeService typeService;
-    private ReviewRepository reviewRepository;
-    private ReportReviewRepository reportReviewRepository;
-    private ReportReviewService reportReviewService;
-    private UserRepository userRepository;
 
     @Autowired
     public void setTypeService(TypeService typeService) {
         this.typeService = typeService;
     }
+
+    private AdminService adminService;
+
+    @Autowired
+    public AdminController(AdminService adminService) {
+        this.adminService = adminService;
+    }
+
     PrintWriter pw = new PrintWriter(System.out);
     public AdminController() { pw.println(getClass().getName() + "()생성"); }
 
@@ -72,22 +79,25 @@ public class AdminController {
 
     /* 신고된 수강평 모음 페이지로 이동 */
     @GetMapping("/report-reviews")
-    public String viewReportReviews(Model model, RedirectAttributes redirectAttributes, Principal principal) {
-        String username = principal.getName();
-        User user = userRepository.findByUsername(username);
-        if (!reportReviewService.hasAdminAuthority(user)) {
-            redirectAttributes.addFlashAttribute("error message", "신고된 수강평을 살펴볼 권한이 없습니다.");
-            return "redirect:/courses";
-        }
-
-        // Retrieve the reported review
-        List<ReportReview> reportReviews = reportReviewRepository.findAll();
-
-        // Pass the information to the view
-        model.addAttribute("reportedReview", reportReviews);
-
+    public String viewReportReviews(Model model) {
+        List<ReportReviewInfoDto> reportedReviews = adminService.getReportedReviews();
+        model.addAttribute("reportedReviews", reportedReviews);
         return "admin/reportreview-page";
     }
 
-
+    /* 신고된 수강평을 처리 */
+    @PatchMapping("/report-reviews")
+    public String editReviewStatus(@RequestParam("reviewId") Long reviewId, @RequestParam("action") String action, Model model) {
+        try {
+            if (action.equals("active")) {
+                adminService.updateReviewStatus(reviewId, ReviewStatus.ACTIVE);
+            } else if (action.equals("inactive")) {
+                adminService.updateReviewStatus(reviewId, ReviewStatus.INACTIVE);
+            }
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "수강평 상태 변경에 실패했습니다.");
+            return "admin/reportreview-page";
+        }
+        return "redirect:/admin/report-reviews";
+    }
 }

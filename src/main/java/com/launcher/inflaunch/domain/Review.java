@@ -47,6 +47,10 @@ public class Review extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ReviewStatus reviewStatus;
 
+    public void setReviewStatus(ReviewStatus reviewStatus) {
+        this.reviewStatus = reviewStatus;
+    }
+
     @OneToMany(mappedBy = "review",  cascade = CascadeType.ALL)
     @ToString.Exclude
     @Builder.Default
@@ -62,3 +66,4 @@ public class Review extends BaseEntity {
         this.reviewStatus = newStatus;
     }
 }
+

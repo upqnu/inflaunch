@@ -5,10 +5,7 @@
 </head>
 <body>
 <h1>강의 수정하기<h1>
-  <!--  <form action="@{/courses/{id}/edit(id=${course.id})}" method="post">-->
-  <!--    <input type="hidden" name="_method" value="patch" />-->
-  <!--    <input type="hidden" name="id" th:value="${course.id}" />-->
-  <form th:action="@{/courses/{id}/edit(id=${course.id})}" method="patch">
+  <form th:action="@{/courses/{id}/edit(id=${course.id})}" method="post">
     <input type="hidden" name="_method" value="patch" />
     <input type="hidden" name="id" th:value="${course.id}" />
 
@@ -19,36 +16,27 @@
     <label>수강료:</label>
     <input type="number" name="price" th:value="${course.price}" /><br>
     <label for="type">강의 타입:</label>
-    <select id="type" name="type" th:field="*{type}" required>
-      <option value="">강의 타입을 선택하세요</option>
-      <option th:each="type : ${allTypes}" th:value="${type}" th:text="${type.type}"></option>
+    <select th:field="*{type.id}">
+      <option th:each="type : ${allTypes}"
+              th:value="${type.id}"
+              th:text="${type.type}"
+              th:selected="${type.id == selectedTypeId}"></option>
     </select>
     <br>
 
     <h2>강의영상:</h2>
-    <!--    <div th:each="video, videoStatus : ${course.videoList}">-->
-    <!--      <label>영상 제목:</label>-->
-    <!--      <input type="text" th:name="|videoList[${videoStatus.index}].title|" th:value="${video.getTitle()}" /><br>-->
-    <!--      <label>영상 저장URL:</label>-->
-    <!--      <input type="text" th:name="|videoList[${videoStatus.index}].source|" th:value="${video.getSource()}" /><br>-->
-    <!--      <label>영상 재생시간:</label>-->
-    <!--      <input type="number" th:name="|videoList[${videoStatus.index}].totalLength|" th:value="${video.getTotalLength()}" /><br>-->
-    <!--      &lt;!&ndash; Add more fields or formatting as needed &ndash;&gt;-->
-    <!--      <hr>-->
-    <div th:each="video, videoStatus : ${course.videoList}">
+    <div th:each="video, videoStat : *{videoList}">
       <label>영상 제목:</label>
-      <!--      <input type="text" th:name="videoList[${videoStatus.index}].title" th:value="${video.title}" /><br>-->
-      <input type="text" th:if="${video != null}" th:name="*{videoList[__${videoStatus.index}__].title}" th:value="*{videoList[__${videoStatus.index}__].title}" /><br>
+      <input type="text" th:name="'videoList[' + ${videoStat.index} + '].title'" th:value="${video.title}" /><br>
       <label>영상 저장URL:</label>
-      <!--      <input type="text" th:name="videoList[${videoStatus.index}].source" th:value="${video.source}" /><br>-->
-      <input type="text" th:name="*{videoList[__${videoStatus.index}__].source}" th:value="*{videoList[__${videoStatus.index}__].source}" /><br>
+      <!--        <input type="text" name="videoList[__${videoStat.index}__].source" th:value="${video.source}" /><br>-->
+      <input type="text" th:name="'videoList[' + ${videoStat.index} + '].source'" th:value="${video.source}" /><br>
       <label>영상 재생시간:</label>
-      <!--      <input type="number" th:name="videoList[${videoStatus.index}].totalLength" th:value="${video.totalLength}" /><br>-->
-      <input type="number" th:name="*{videoList[__${videoStatus.index}__].totalLength}" th:value="*{videoList[__${videoStatus.index}__].totalLength}" /><br>
-
-      <!-- Add more fields or formatting as needed -->
+      <!--        <input type="number" name="videoList[__${videoStat.index}__].totalLength" th:value="${video.totalLength}" /><br>-->
+      <input type="number" th:name="'videoList[' + ${videoStat.index} + '].totalLength'" th:value="${video.totalLength}" /><br>
       <hr>
     </div>
+
     <button type="submit">강의 수정</button>
   </form>
 </body>

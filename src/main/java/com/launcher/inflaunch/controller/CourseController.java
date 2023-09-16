@@ -1,16 +1,18 @@
 package com.launcher.inflaunch.controller;
 
+import com.launcher.inflaunch.config.PrincipalDetailService;
+import com.launcher.inflaunch.config.PrincipalDetails;
 import com.launcher.inflaunch.domain.Course;
+import com.launcher.inflaunch.domain.Review;
 import com.launcher.inflaunch.domain.Type;
 import com.launcher.inflaunch.domain.User;
 import com.launcher.inflaunch.dto.CourseCreateDto;
 import com.launcher.inflaunch.dto.CoursePatchDto;
-import com.launcher.inflaunch.dto.VideoCreateDto;
 import com.launcher.inflaunch.exception.CourseNotFoundException;
 import com.launcher.inflaunch.repository.TypeRepository;
 import com.launcher.inflaunch.repository.UserRepository;
 import com.launcher.inflaunch.service.CourseService;
-
+import com.launcher.inflaunch.service.ReviewService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Controller
@@ -36,6 +39,8 @@ public class CourseController {
     private final CourseService courseService;
     private final TypeRepository typeRepository;
     private final UserRepository userRepository;
+    private final PrincipalDetailService principalDetailService;
+    private final ReviewService reviewService;
 
     /* 강의 생성 정보를 입력하는 폼으로 이동 */
     @GetMapping("/new")
@@ -68,14 +73,19 @@ public class CourseController {
 
         String username = principal.getName();
         User user = userRepository.findByUsername(username);
-        courseCreateDto.setUserId(user.getId());
 
         if (result.hasErrors()) {
-            // 유효성 검사 오류 처리
+            model.addAttribute("org.springframework.validation.BindingResult.courseCreateDto", result);
             return "course/create-course";
         }
 
-        courseService.createCourse(courseCreateDto);
+        try {
+            courseService.createCourse(courseCreateDto, user);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "course/create-course";
+        }
+
         model.addAttribute("courseCreated", true);
         return "redirect:/courses";
     }
@@ -90,19 +100,41 @@ public class CourseController {
 
     /* 개별 강의 페이지 */
     @GetMapping("/{id}")
-    public String showCourse(@PathVariable Long id, Model model) {
+    public String showCourse(@PathVariable Long id, Model model, Principal principal) {
 
         try {
             Course course = courseService.getCourse(id);
+            List<Review> reviews = reviewService.getAllReviews(id);
             model.addAttribute("course", course);
+            model.addAttribute("reviews", reviews);
+            model.addAttribute("courseId", id);
 
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            boolean hasAdminAuthority = authentication.getAuthorities().stream()
-                    .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-            model.addAttribute("hasAdminAuthority", hasAdminAuthority);
+            boolean hasReviews = !reviews.isEmpty();
+            model.addAttribute("hasReviews", hasReviews);
 
-            String currentUser = authentication.getName();
+            // User currentUser = null; // 로그인 여부와 상관 없이 모든 리뷰를 노출하기 때문에 현재 사용자 정보는 필요하지 않음.
+            // model.addAttribute("currentUser", currentUser);
+
+            User currentUser = Optional.ofNullable(principal)
+                    .map(Principal::getName)
+                    .map(userRepository::findByUsername)
+                    .orElse(null);
             model.addAttribute("currentUser", currentUser);
+
+//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//            List<String> roles = authentication.getAuthorities().stream()
+//                    .map(GrantedAuthority::getAuthority)
+//                    .collect(Collectors.toList());
+//
+//            model.addAttribute("hasAdminAuthority", roles.contains("ROLE_ADMIN"));
+//            model.addAttribute("hasMentorAuthority", roles.contains("ROLE_MENTOR"));
+//
+//            Optional.ofNullable(authentication.getPrincipal())
+//                    .filter(PrincipalDetails.class::isInstance)
+//                    .map(PrincipalDetails.class::cast)
+//                    .map(PrincipalDetails::getUser)
+//                    .map(User::getId)
+//                    .ifPresent(userId -> model.addAttribute("userId", userId));
 
             return "course/course-page";
         } catch (CourseNotFoundException ex) {
@@ -113,20 +145,40 @@ public class CourseController {
 
     /* 강의 수정 폼으로 이동 */
     @GetMapping("/{id}/edit")
-    public String showEditCourseForm(@PathVariable Long id, Model model) {
+    public String showEditCourseForm(@PathVariable Long id, Model model, Principal principal) {
         Course course = courseService.getCourse(id);
+
+        // 사용자 인증(admin 또는 course를 생성한 유저가 아니면 예외 발생)
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.getPrincipal() instanceof PrincipalDetails) {
+            PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+            User user = principalDetails.getUser();
+            Long userId = user.getId();
+
+            if (!course.getUser().getId().equals(userId)
+                    && !authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
+                throw new IllegalArgumentException("수정 권한이 없습니다.");
+            }
+        }
+
+        // course가 null인지 확인
+        if (course == null) {
+            throw new IllegalArgumentException("해당 강의를 찾을 수 없습니다.");
+        }
+
         List<Type> allTypes = typeRepository.findAll();
 
         model.addAttribute("course", course);
         model.addAttribute("allTypes", allTypes);
         model.addAttribute("type", course.getType());
+        model.addAttribute("videoList", course.getVideoList());
 
         return "course/edit-course";
     }
 
     /* 강의 수정 */
     @PatchMapping("/{id}/edit")
-    public String editCourse(@PathVariable Long id, @ModelAttribute CoursePatchDto coursePatchDto, BindingResult bindingResult) {
+    public String editCourse(@PathVariable Long id, @ModelAttribute CoursePatchDto coursePatchDto, BindingResult bindingResult, Model model, Principal principal) {
         if (bindingResult.hasErrors()) {
             for (FieldError error : bindingResult.getFieldErrors()) {
                 log.info("Field: {} - Error: {}", error.getField(), error.getDefaultMessage());
@@ -138,24 +190,34 @@ public class CourseController {
         // coursePatchDto  객체를 출력하여 해당 객체의 내용을 확인
         log.info("CoursePatchDto: {}", coursePatchDto);
 
+//        // 1. 사용자 인증
+//        Course course = courseService.getCourse(id);
+//        if (!course.getUser().getEmail().equals(principal.getName()) && !principal.getName().equals("admin")) {
+//            throw new IllegalArgumentException("수정 권한이 없습니다.");
+//        }
+
         // Print the videoList
-        if (coursePatchDto.getVideoList() != null) {
-            for (VideoCreateDto video : coursePatchDto.getVideoList()) {
-                log.info("Video Title: {}", video.getTitle());
-                log.info("Video Source: {}", video.getSource());
-                log.info("Video Total Length: {}", video.getTotalLength());
-            }
-        } else {
-            log.info("Video List is null");
+        if (coursePatchDto.getVideoList() == null || coursePatchDto.getVideoList().isEmpty()) {
+            log.error("강의 영상이 존재하지 않습니다.");
+            model.addAttribute("errorMessage", "강의 영상이 존재하지 않습니다.");
+            return "course/course-page";
         }
 
-        courseService.updateCourse(id, coursePatchDto);
-        return "course/course-page";
+        try {
+            courseService.updateCourse(id, coursePatchDto);
+        } catch (Exception e) {
+            log.error("강의 정보 수정에 실패했습니다.", e);
+            model.addAttribute("errorMessage", "강의 정보 수정에 실패했습니다.");
+            return "course/course-page";
+        }
+
+        return "redirect:/courses";
     }
 
     /* 강의 삭제 폼으로 이동 */
     @GetMapping("/{id}/delete")
-    public String showDeleteCourse(@PathVariable Long id, Model model) {
+    public String showDeleteCourse(@PathVariable Long id, Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+
         model.addAttribute("courseId", id);
         return "course/delete-course";
     }
@@ -164,6 +226,6 @@ public class CourseController {
     @PostMapping("/{id}/delete")
     public String deleteCourse(@PathVariable Long id) {
         courseService.deleteCourse(id);
-        return "redirect:/course/courses";
+        return "redirect:/courses";
     }
 }

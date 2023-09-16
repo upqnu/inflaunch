@@ -63,6 +63,7 @@ public class ReviewService {
                 .reviewWrite(reviewCreateDto.getReviewWrite())
                 .advantage(reviewCreateDto.getAdvantage())
                 .disadvantage(reviewCreateDto.getDisadvantage())
+                .reportCount(0)
                 .reviewStatus(ReviewStatus.ACTIVE)
                 .build();
 
@@ -104,6 +105,9 @@ public class ReviewService {
 
             Review updatedReview = reviewMapper.reviewPatchDtoToReview(reviewPatchDto, existingReview);
 
+            // Course 객체를 먼저 저장
+            courseRepository.save(updatedReview.getCourse());
+
             reviewRepository.save(updatedReview);
 
             log.info(updatedReview + " Updated");
@@ -137,7 +141,8 @@ public class ReviewService {
             throw new IllegalArgumentException("이 수강평은 삭제가 불가능한 상태입니다.");
         }
 
-        Review deletedReview = reviewMapper.reviewDeleteDtoToReview(existingReview);
-        reviewRepository.save(deletedReview);
+        existingReview.setRegDate(existingReview.getRegDate());
+        existingReview.setReviewStatus(ReviewStatus.DELETED);
+        reviewRepository.save(existingReview);
     }
 }

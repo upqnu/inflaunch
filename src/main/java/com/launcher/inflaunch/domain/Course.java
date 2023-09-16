@@ -1,6 +1,8 @@
 package com.launcher.inflaunch.domain;
+
 import com.launcher.inflaunch.enum_status.CourseStatus;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ public class Course extends BaseEntity{
     private int price;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @ToString.Exclude
+    @Valid
     private List<Video> videoList = new ArrayList<>();
 
     @OneToMany(mappedBy = "course")
@@ -52,9 +54,9 @@ public class Course extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private CourseStatus courseStatus;
 
-    public CourseStatus getCourseStatus() {
-        return this.courseStatus;
-    }
+//    public CourseStatus getCourseStatus() {
+//        return this.courseStatus;
+//    }
 
     public Course(Long id, Type type, String title, String description, int price) {
         this.id = id;
@@ -64,16 +66,11 @@ public class Course extends BaseEntity{
         this.price = price;
     }
 
-    public void addVideo(Video video) {
-        if (videoList == null) {
-            videoList = new ArrayList<>();
-        }
-        videoList.add(video);
-    }
-    // @ToString.Exclude가 반드시 필요하지 않다면 -> videoList에서 @ToString.Exclude는 삭제하고 위 getter도 삭제
-
     public List<Video> getVideoList() {
         return this.videoList;
     }
-    // @ToString.Exclude가 반드시 필요하지 않다면 -> videoList에서 @ToString.Exclude는 삭제하고 위 getter도 삭제
+
+    public void setCourseStatus(CourseStatus courseStatus) {
+        this.courseStatus = courseStatus;
+    }
 }

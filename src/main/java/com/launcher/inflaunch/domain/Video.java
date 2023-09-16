@@ -1,9 +1,10 @@
 package com.launcher.inflaunch.domain;
 
 import com.launcher.inflaunch.enum_status.VideoStatus;
+import com.launcher.inflaunch.enum_status.WatchStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 @Getter
@@ -23,6 +24,10 @@ public class Video extends BaseEntity {
     @ToString.Exclude
     private Course course;
 
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
     @NotBlank
     private String title;
 
@@ -32,9 +37,24 @@ public class Video extends BaseEntity {
 
     /* 강의영상의 길이 - 초(second)로 표시한다. */
     @Column(nullable = false)
-    @Positive
-    private int totalLength;
+    @PositiveOrZero
+    private Integer totalLength;
+
+    private Integer lastViewingTime;
+
+    @Enumerated(EnumType.STRING)
+    private WatchStatus watchStatus;
 
     @Enumerated(EnumType.STRING)
     private VideoStatus videoStatus;
+
+    public Video(String title, String source, int totalLength, Course course) {
+        this.title = title;
+        this.source = source;
+        this.totalLength = totalLength;
+        this.course = course;
+        this.videoStatus = VideoStatus.ACTIVE;
+        this.lastViewingTime = 0;
+        this.watchStatus = WatchStatus.NOT_WATCHED;
+    }
 }
