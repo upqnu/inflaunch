@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Review</title>
+</head>
+<body>
+
+<h1>수강평 작성</h1>
+
+<!--<form th:if="${course != null}" th:action="@{/courses/{courseId}/newreview(courseId=${course.id})}" method="post" th:object="${reviewCreateDto}">-->
+<!--  <div>-->
+<!--    <label for="rate">평점:</label>-->
+<!--    <input type="number" id="rate" name="rate" th:field="${reviewCreateDto.rate}" value="" />-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <label for="reviewWrite">수강평:</label>-->
+<!--    <textarea id="reviewWrite" name="reviewWrite" th:field="${reviewCreateDto.reviewWrite}" /></textarea>-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <label for="advantage">강의 장점:</label>-->
+<!--    <select id="advantage" name="advantage" th:field="*{advantage}" />-->
+<!--      <option value="">이 강의의 장점을 선택해주세요.</option>-->
+<!--      <option th:each="advantage : ${T(com.launcher.inflaunch.enum_status.Advantage).values()}" th:value="${advantage}" th:text="${advantage.getAdv()}"></option>-->
+<!--    </select>-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <label for="disadvantage">강의 단점:</label>-->
+<!--    <select id="disadvantage" name="disadvantage" th:field="*{disadvantage}" />-->
+<!--      <option value="">이 강의의 단점을 선택해주세요.</option>-->
+<!--      <option th:each="disadvantage : ${T(com.launcher.inflaunch.enum_status.Disadvantage).values()}" th:value="${disadvantage}" th:text="${disadvantage.getDis()}"></option>-->
+<!--    </select>-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <input type="hidden" name="courseId" th:value="${reviewCreateDto.courseId}" />-->
+<!--  </div>-->
+<!--  <button type="submit">수강평 등록</button>-->
+<!--  </form>-->
+
+<form th:action="@{/courses/{courseId}/newreview(courseId=${reviewCreateDto.courseId})}"
+      method="post"
+      th:object="${reviewCreateDto}">
+
+  <div>
+    <label for="rate">평점:</label>
+    <input type="number" id="rate" name="rate" th:field="*{rate}" />
+  </div>
+
+  <div>
+    <label for="reviewWrite">수강평:</label>
+    <textarea id="reviewWrite" name="reviewWrite" th:field="*{reviewWrite}" ></textarea>
+  </div>
+
+  <div>
+    <label for="advantage">강의 장점:</label>
+    <select id="advantage" name="advantage" th:field="*{advantage}" >
+      <option value="">이 강의의 장점을 선택해주세요.</option>
+      <option th:each="advantage : ${advantageEnum}"
+              th:value="${advantage}" th:text="${advantage.getAdv()}"></option>
+    </select>
+  </div>
+
+  <div>
+    <label for="disadvantage">강의 단점:</label>
+    <select id="disadvantage" name="disadvantage" th:field="*{disadvantage}" >
+      <option value="">이 강의의 단점을 선택해주세요.</option>
+      <option th:each="disadvantage : ${disadvantageEnum}"
+              th:value="${disadvantage}" th:text="${disadvantage.getDis()}"></option>
+    </select>
+  </div>
+
+  <input type="hidden" name="courseId" th:value="${reviewCreateDto.courseId}" />
+
+  <button type="submit">수강평 작성</button>
+</form>
+
+</body>
+</html>

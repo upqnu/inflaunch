@@ -1,7 +1,8 @@
 package com.launcher.inflaunch.domain;
+
 import com.launcher.inflaunch.enum_status.CourseStatus;
-import com.launcher.inflaunch.enum_status.VideoStatus;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -37,8 +38,7 @@ public class Course extends BaseEntity{
     private int price;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-//    @Builder.Default
+    @Valid
     private List<Video> videoList = new ArrayList<>();
 
     @OneToMany(mappedBy = "course")
@@ -54,9 +54,9 @@ public class Course extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private CourseStatus courseStatus;
 
-    public CourseStatus getCourseStatus() {
-        return this.courseStatus;
-    }
+//    public CourseStatus getCourseStatus() {
+//        return this.courseStatus;
+//    }
 
     public Course(Long id, Type type, String title, String description, int price) {
         this.id = id;
@@ -64,5 +64,13 @@ public class Course extends BaseEntity{
         this.title = title;
         this.description = description;
         this.price = price;
+    }
+
+    public List<Video> getVideoList() {
+        return this.videoList;
+    }
+
+    public void setCourseStatus(CourseStatus courseStatus) {
+        this.courseStatus = courseStatus;
     }
 }

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Reported Reviews</title>
+  <style>
+    .active-button {
+      color: green;
+      cursor: pointer;
+    }
+    .inactive-button {
+      color: gray;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<h1>수강평 신고 현황</h1>
+
+<table>
+  <thead>
+  <tr>
+    <th>[수강평 ID]</th>
+    <th>수강평 내용</th>
+    <th>수강평 작성 유저id</th>
+    <th>수강평 작성 유저이름</th>
+    <th>수강평 총 신고횟수</th>
+    <th>수강평 Status</th>
+
+    <th>[강의 ID]</th>
+    <th>강의 제목 </th>
+
+    <th>[수강평 신고 ID]</th>
+    <th>수강평 신고 내용</th>
+    <th>수강평 신고 유저id</th>
+    <th>수강평 신고 유저이름</th>
+    <th>수강평 처리</th>
+  </tr>
+  </thead>
+
+  <tbody>
+  <tr th:each="reportedReview : ${reportedReviews}">
+    <td th:text="${reportedReview.reportedReviewId}"></td>
+    <td th:text="${reportedReview.reportedReviewWrite}"></td>
+    <td th:text="${reportedReview.reviewUserId}"></td>
+    <td th:text="${reportedReview.reviewUsername}"></td>
+    <td th:text="${reportedReview.reportCount}"></td>
+    <td th:text="${reportedReview.reviewStatus}"></td>
+    <td th:text="${reportedReview.reportedReviewCourseId}"></td>
+    <td th:text="${reportedReview.reportedReviewCourseTitle}"></td>
+    <td th:text="${reportedReview.reportReviewId}"></td>
+    <td th:text="${reportedReview.reportReviewContent}"></td>
+    <td th:text="${reportedReview.reviewReportingUserId}"></td>
+    <td th:text="${reportedReview.reviewReportingUsername}"></td>
+
+    <td>
+      <form id="reviewForm" th:action="@{/admin/report-reviews}" method="post">
+        <input type="hidden" name="_method" value="patch" />
+        <input type="hidden" name="reviewId" th:value="${reportedReview.reportedReviewId}" />
+        <button type="submit" name="action" value="active" class="active-button" onclick="confirmReviewAction('active')">수강평 재노출</button>
+        <button type="submit" name="action" value="inactive" class="inactive-button" onclick="confirmReviewAction('inactive')">수강평 숨김</button>
+      </form>
+    </td>
+
+    <script>
+      function confirmReviewAction(action) {
+        var message = '';
+        if (action === 'active') {
+          message = '해당 수강평을 재노출하시겠습니까?';
+        } else if (action === 'inactive') {
+          message = '해당 수강평을 숨기시겠습니까?';
+        }
+        if (confirm(message)) {
+          var form = document.getElementById('reviewForm');
+          var actionInput = document.createElement('input');
+          actionInput.type = 'hidden';
+          actionInput.name = 'action';
+          actionInput.value = action;
+          form.appendChild(actionInput);
+          form.submit();
+        }
+      }
+    </script>
+
+  </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

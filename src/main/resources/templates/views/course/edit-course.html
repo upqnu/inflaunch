@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Edit Course</title>
+</head>
+<body>
+<h1>강의 수정하기<h1>
+  <form th:action="@{/courses/{id}/edit(id=${course.id})}" method="post">
+    <input type="hidden" name="_method" value="patch" />
+    <input type="hidden" name="id" th:value="${course.id}" />
+
+    <label>강의 제목:</label>
+    <input type="text" name="title" th:value="${course.title}" /><br>
+    <label>강의 소개:</label>
+    <textarea name="description" rows="4" cols="50" th:text="${course.description}"></textarea><br>
+    <label>수강료:</label>
+    <input type="number" name="price" th:value="${course.price}" /><br>
+    <label for="type">강의 타입:</label>
+    <select th:field="*{type.id}">
+      <option th:each="type : ${allTypes}"
+              th:value="${type.id}"
+              th:text="${type.type}"
+              th:selected="${type.id == selectedTypeId}"></option>
+    </select>
+    <br>
+
+    <h2>강의영상:</h2>
+    <div th:each="video, videoStat : *{videoList}">
+      <label>영상 제목:</label>
+      <input type="text" th:name="'videoList[' + ${videoStat.index} + '].title'" th:value="${video.title}" /><br>
+      <label>영상 저장URL:</label>
+      <!--        <input type="text" name="videoList[__${videoStat.index}__].source" th:value="${video.source}" /><br>-->
+      <input type="text" th:name="'videoList[' + ${videoStat.index} + '].source'" th:value="${video.source}" /><br>
+      <label>영상 재생시간:</label>
+      <!--        <input type="number" name="videoList[__${videoStat.index}__].totalLength" th:value="${video.totalLength}" /><br>-->
+      <input type="number" th:name="'videoList[' + ${videoStat.index} + '].totalLength'" th:value="${video.totalLength}" /><br>
+      <hr>
+    </div>
+
+    <button type="submit">강의 수정</button>
+  </form>
+</body>
+</html>

@@ -2,26 +2,36 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <title>Create Course</title>
+  <script>
+    window.onload = function() {
+      // localStorage에서 video 필드들의 값을 불러옴
+      var videoValues = JSON.parse(localStorage.getItem('videoValues'));
+      // localStorage에서 type 필드의 값을 불러옴
+      var typeValue = localStorage.getItem('typeValue');
+      // video 필드들의 값을 설정
+      for (var i = 0; i < videoValues.length; i++) {
+        document.getElementById('videoTitle' + i).value = videoValues[i].title;
+        document.getElementById('videoTotalLength' + i).value = videoValues[i].totalLength;
+        document.getElementById('videoSource' + i).value = videoValues[i].source;
+      }
+      // type 필드의 값을 설정
+      document.getElementById('type').value = typeValue;
+    }
+  </script>
 </head>
 <body>
 <h1>신규 강의 생성</h1>
-<form th:object="${courseCreateDto}" th:action="@{/courses/new}" method="post">
-
+<form th:object="${courseCreateDto}" th:action="@{/courses/new}" method="post" id="courseForm" onsubmit="return checkVideoFields();">
   <label for="title">강의 제목:</label>
   <input type="text" id="title" th:field="*{title}" required>
-  <div th:if="${#fields.hasErrors('title')}" class="error-message">
-    <span th:if="${#fields.hasError('title')}" th:errors="*{title}"></span>
-    <span th:if="${!#fields.hasError('title')}" th:text="#{courseCreateDto.title}"></span>
-  </div>
+  <span th:if="${errorMessage}" th:text="${errorMessage}"></span>
   <br>
-
   <label for="description">강의 소개:</label>
   <input type="text" id="description" th:field="*{description}" required>
   <div th:if="${#fields.hasErrors('description')}" class="error-message">
     <span th:errors="*{description}"></span>
   </div>
   <br>
-
   <label for="type">강의 타입:</label>
   <select id="type" name="type" th:field="*{type}" required>
     <option value="">강의 타입을 선택하세요</option>
@@ -31,29 +41,172 @@
     <span th:errors="*{type}"></span>
   </div>
   <br>
-
   <label for="price">수강료:</label>
   <input type="number" id="price" th:field="*{price}" required>
   <br>
-
   <!-- Video information section -->
-  <label for="videoTitle">강의영상 제목 :</label>
-  <input type="text" id="videoTitle" th:field="*{videoList[0].title}">
+  <div id="videoContainer">
+    <div id="video0">
+      <h3>[강의 영상]</h3>
+      <label for="videoTitle0">비디오 제목:</label>
+      <input type="text" id="videoTitle0" name="videoList[0].title" >
+      <br>
+      <label for="videoTotalLength0">비디오 재생시간(초):</label>
+      <input type="number" id="videoTotalLength0" name="videoList[0].totalLength" >
+      <br>
+      <label for="videoSource0">비디오 저장 URL:</label>
+      <input type="text" id="videoSource0" name="videoList[0].source" >
+      <br>
+    </div>
+  </div>
+  <button type="button" onclick="addVideo()">비디오 추가</button>
   <br>
-
-  <label for="videoLength">강의영상 재생시간(초):</label>
-  <input type="number" id="videoLength" th:field="*{videoList[0].totalLength}">
-  <br>
-
-  <label for="videoSource">강의영상 저장 URL:</label>
-  <input type="text" id="videoSource" th:field="*{videoList[0].source}">
-  <br>
-
   <button type="submit">강의 생성</button>
 </form>
 
-<div th:if="${courseCreated}" class="success-message">
-  <span>강의가 성공적으로 생성되었습니다.</span>
-</div>
+<script>
+  var videoCount = 1;
+  var videoValues = []; // 입력된 video 필드의 값들을 저장할 배열
+  // 기존 video 필드의 값을 배열에 저장
+  var videoTitleInput = document.getElementById('videoTitle0');
+  var videoTotalLengthInput = document.getElementById('videoTotalLength0');
+  var videoSourceInput = document.getElementById('videoSource0');
+
+  videoValues.push({
+    title: videoTitleInput.value,
+    totalLength: videoTotalLengthInput.value,
+    source: videoSourceInput.value
+  });
+
+  function addVideo() {
+    videoCount++;
+    var videoContainer = document.getElementById("videoContainer");
+    var videoDiv = document.createElement("div");
+    videoDiv.id = "video" + videoCount;
+    var videoHeading = document.createElement("h3");
+    videoHeading.textContent = "비디오 " + videoCount;
+    var videoTitleLabel = document.createElement("label");
+    videoTitleLabel.setAttribute("for", "videoTitle" + videoCount);
+    videoTitleLabel.textContent = "비디오 제목:";
+    var videoTitleInput = document.createElement("input");
+    videoTitleInput.type = "text";
+    videoTitleInput.id = "videoTitle" + videoCount;
+    videoTitleInput.name = "videoList[" + (videoCount - 1) + "].title";
+    videoTitleInput.required = true;
+    // 새로운 video 필드가 추가될 때, 이전에 입력된 값으로 기본값을 설정
+    videoTitleInput.value = videoValues[videoCount - 1] ? videoValues[videoCount - 1].title : '';
+    var videoTotalLengthLabel = document.createElement("label");
+    videoTotalLengthLabel.setAttribute("for", "videoTotalLength" + videoCount);
+    videoTotalLengthLabel.textContent = "비디오 재생시간(초):";
+    var videoTotalLengthInput = document.createElement("input");
+    videoTotalLengthInput.type = "number";
+    videoTotalLengthInput.id = "videoTotalLength" + videoCount;
+    videoTotalLengthInput.name = "videoList[" + (videoCount - 1) + "].totalLength";
+    videoTotalLengthInput.required = true
+    // 새로운 video 필드가 추가될 때, 이전에 입력된 값으로 기본값을 설정
+    videoTotalLengthInput.value = videoValues[videoCount - 1] ? videoValues[videoCount - 1].totalLength : '';
+    var videoSourceLabel = document.createElement("label");
+    videoSourceLabel.setAttribute("for", "videoSource" + videoCount);
+    videoSourceLabel.textContent = "비디오 저장 URL:";
+    var videoSourceInput = document.createElement("input");
+    videoSourceInput.type = "text";
+    videoSourceInput.id = "videoSource" + videoCount;
+    videoSourceInput.name = "videoList[" + (videoCount - 1) + "].source";
+    videoSourceInput.required = true;
+    // 새로운 video 필드가 추가될 때, 이전에 입력된 값으로 기본값을 설정
+    videoSourceInput.value = videoValues[videoCount - 1] ? videoValues[videoCount - 1].source : '';
+    videoDiv.appendChild(videoHeading);
+    videoDiv.appendChild(videoTitleLabel);
+    videoDiv.appendChild(videoTitleInput);
+    videoDiv.appendChild(document.createElement("br"));
+    videoDiv.appendChild(videoTotalLengthLabel);
+    videoDiv.appendChild(videoTotalLengthInput);
+    videoDiv.appendChild(document.createElement("br"));
+    videoDiv.appendChild(videoSourceLabel);
+    videoDiv.appendChild(videoSourceInput);
+    videoDiv.appendChild(document.createElement("br"));
+    videoContainer.appendChild(videoDiv);
+  }
+
+  document.querySelector('form').addEventListener('submit', function(event) {
+    // video 필드들의 값을 배열에 저장
+    videoValues = [];
+    for (var i = 0; i < videoCount; i++) {
+      var videoTitleInput = document.getElementById('videoTitle' + i);
+      var videoTotalLengthInput = document.getElementById('videoTotalLength' + i);
+      var videoSourceInput = document.getElementById('videoSource' + i);
+      videoValues.push({
+        title: videoTitleInput.value,
+        totalLength: videoTotalLengthInput.value,
+        source: videoSourceInput.value
+      });
+    }
+
+    var isAnyFieldBlank = videoValues.some(function(video) {
+      return !video.title.trim() || !video.totalLength.trim() || !video.source.trim();
+    });
+
+    if (isAnyFieldBlank) {
+      // video 필드들 중 하나라도 비어있는 경우
+      event.preventDefault();
+      return; // 여기서 함수를 종료하여 form submit을 중단
+    }
+
+    // video 필드들의 값을 localStorage에 저장
+    localStorage.setItem('videoValues', JSON.stringify(videoValues));
+    // type 필드의 값을 localStorage에 저장
+    localStorage.setItem('typeValue', document.getElementById('type').value);
+  });
+
+  // function checkVideoFields() {
+  //   var videoTitleInput = document.getElementById('videoTitle0');
+  //   var videoTotalLengthInput = document.getElementById('videoTotalLength0');
+  //   var videoSourceInput = document.getElementById('videoSource0');
+  //   var isTitleBlank = videoTitleInput.value.trim() === "";
+  //   var isTotalLengthBlank = videoTotalLengthInput.value.trim() === "";
+  //   var isSourceBlank = videoSourceInput.value.trim() === "";
+
+  //   // video 필드들 중 하나라도 비어있는 경우
+  //   if (isTitleBlank || isTotalLengthBlank || isSourceBlank) {
+  //     // video 필드들이 모두 비어있는 경우
+  //     if (isTitleBlank && isTotalLengthBlank && isSourceBlank) {
+  //       return confirm('강의영상 없는 상태로 우선 강의를 먼저 생성하시겠습니까?');
+  //     }
+  //     // video 필드들 중 하나라도 비어있는 경우
+  //     else {
+  //       alert('나머지 입력하지 않은 video 관련 필드를 입력해주세요.');
+  //       return false;
+  //     }
+  //   }
+  //   // video 필드들이 모두 채워져 있는 경우
+  //   return true;
+  // }
+
+  function checkVideoFields() {
+    var videoTitleInput = document.getElementById('videoTitle0');
+    var videoTotalLengthInput = document.getElementById('videoTotalLength0');
+    var videoSourceInput = document.getElementById('videoSource0');
+    var isTitleBlank = videoTitleInput.value.trim() === "";
+    var isTotalLengthBlank = videoTotalLengthInput.value.trim() === "";
+    var isSourceBlank = videoSourceInput.value.trim() === "";
+
+    // video 필드들 중 하나라도 비어있는 경우
+    if (isTitleBlank || isTotalLengthBlank || isSourceBlank) {
+      // video 필드들이 모두 비어있는 경우
+      if (isTitleBlank && isTotalLengthBlank && isSourceBlank) {
+        var yn = confirm('강의영상 없는 상태로 우선 강의를 먼저 생성하시겠습니까?');
+        console.log(yn);
+        return yn;
+      }
+      // video 필드들 중 하나라도 비어있는 경우
+      else {
+        alert('나머지 입력하지 않은 video 관련 필드를 입력해주세요.');
+        return false;
+      }
+    }
+    // video 필드들이 모두 채워져 있는 경우
+    return true;
+  }
+</script>
 </body>
 </html>

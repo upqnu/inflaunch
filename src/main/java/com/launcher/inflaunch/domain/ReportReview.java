@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -27,7 +28,6 @@ public class ReportReview extends BaseEntity {
     @ToString.Exclude
     private Review review;
 
-    @NotNull
-    @Size(min = 20)
+    @Column(nullable = false)
     private String content;
 }

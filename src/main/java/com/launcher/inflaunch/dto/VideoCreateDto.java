@@ -2,7 +2,7 @@ package com.launcher.inflaunch.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +23,7 @@ public class VideoCreateDto {
     @NotBlank
     private String source;
 
-    @NotNull
-    @Positive
-    private int totalLength;
+    // @Positive
+    @PositiveOrZero
+    private Integer totalLength;
 }

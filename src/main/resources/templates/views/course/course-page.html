@@ -6,37 +6,148 @@
 </head>
 <body>
 
-<h1>강의 정보</h1>
-<h2 th:text="${course.title}"></h2>
+<!--<h1>[강의 정보]</h1>-->
+<!--&lt;!&ndash;<h2 th:text="${course.title}"></h2>&ndash;&gt;-->
+<!--<h2 th:if="${course != null}" th:text="${course.title}"></h2>-->
+<!--<h2 th:unless="${course != null}">강의 정보가 존재하지 않습니다.</h2>-->
+<!--<p>-->
+<!--  <strong>강의 소개:</strong>-->
+<!--&lt;!&ndash;  <span th:text="${course.description}"></span>&ndash;&gt;-->
+<!--  <span th:if="${course != null}" th:text="${course.description}"></span>-->
+<!--  <span th:unless="${course != null}">강의 소개 정보가 존재하지 않습니다.</span>-->
+<!--</p>-->
+<!--<p>-->
+<!--&lt;!&ndash;  <strong>수강료:</strong> ₩<span th:text="${#numbers.formatInteger(course.price, 0, 'COMMA')}"></span>&ndash;&gt;-->
+<!--  <strong>수강료: ₩</strong>-->
+<!--  <span th:if="${course != null}" th:text="${#numbers.formatInteger(course.price, 0, 'COMMA')}"></span>-->
+<!--  <span th:unless="${course != null}">수강료 정보가 존재하지 않습니다.</span>-->
+<!--</p>-->
+<!--<p>-->
+<!--&lt;!&ndash;  <strong>강사:</strong> <span th:text="${course.user.username}"></span>&ndash;&gt;-->
+<!--  <strong>강사:</strong>-->
+<!--  <span th:if="${course?.user != null}" th:text="${course.user.username}"></span>-->
+<!--  <span th:unless="${course?.user != null}">강사 정보가 존재하지 않습니다.</span>-->
+<!--</p>-->
+<!--<p>-->
+<!--&lt;!&ndash;  <strong>강의 타입:</strong> <span th:text="${course.type.type}"></span>&ndash;&gt;-->
+<!--  <strong>강의 타입:</strong>-->
+<!--  <span th:if="${course?.type != null}" th:text="${course.type.type}"></span>-->
+<!--  <span th:unless="${course?.type != null}">강의 타입 정보가 존재하지 않습니다.</span>-->
+<!--</p>-->
+
+<h1>[강의 정보]</h1>
+<h2 th:if="${course != null}" th:text="${course.title} ?: '제목 없음'"></h2>
+<h2 th:unless="${course != null}">강의 정보가 존재하지 않습니다.</h2>
 <p>
   <strong>강의 소개:</strong>
-  <span th:text="${course.description}"></span>
+  <span th:if="${course != null}" th:text="${course.description} ?: '소개 없음'"></span>
+  <span th:unless="${course != null}">강의 소개 정보가 존재하지 않습니다.</span>
 </p>
 <p>
-  <strong>수강료:</strong> ₩<span th:text="${#numbers.formatInteger(course.price, 0, 'COMMA')}"></span>
+  <strong>수강료: ₩</strong>
+  <span th:if="${course != null}" th:text="${#numbers.formatInteger(course.price, 0, 'COMMA')} ?: '가격 없음'"></span>
+  <span th:unless="${course != null}">수강료 정보가 존재하지 않습니다.</span>
 </p>
 <p>
-  <strong>강사:</strong> <span th:text="${course.user.username}"></span>
+  <strong>강사:</strong>
+  <span th:if="${course != null and course.user != null}" th:text="${course.user.username}"></span>
+  <span th:unless="${course != null and course.user != null}">강사 정보가 존재하지 않습니다.</span>
 </p>
 <p>
-  <strong>강의 타입:</strong> <span th:text="${course.type.type}"></span>
+  <strong>강의 타입:</strong>
+  <span th:if="${course != null and course.type != null}" th:text="${course.type.type}"></span>
+  <span th:unless="${course != null and course.type != null}">강의 타입 정보가 존재하지 않습니다.</span>
 </p>
-<h3>[강의 영상]</h3>
+
+<h2>= 강의 영상 =</h2>
 <ul>
-  <li th:each="video : ${course.videoList}">
-    <p><strong>영상 제목:</strong> <span th:text="${video.getTitle()}"></span><br></p>
-    <p><strong>영상 저장소스:</strong> <span th:text="${video.getSource()}"></span><br></p>
-    <p><strong>영상 재생시간:</strong> <span th:text="${video.getTotalLength()}"></span>초<br></p>
-    <hr>
-  </li>
+  <!--  <li th:each="video : ${course.videoList}">-->
+  <div th:if="${course != null}">
+    <li th:each="video : ${course.videoList}">
+      <p><strong>영상 제목:</strong> <span th:text="${video.title}"></span><br></p>
+      <p><strong>영상 저장소스:</strong> <span th:text="${video.source}"></span><br></p>
+      <p><strong>영상 재생시간:</strong> <span th:text="${video.totalLength}"></span>초<br></p>
+      <hr>
+    </li>
+  </div>
 </ul>
 
-<!-- Buttons visible to admins or the user who created the course -->
-<div th:if="${hasAdminAuthority or course.user.username == currentUser}">
-  <a th:href="@{/courses/{id}/edit(id=${course.id})}">강의 수정</a><br>
+<div th:if="${hasAdminAuthority} or ${hasMentorAuthority}">
+  <a th:href="@{/courses/{id}/edit(id=${course.id})}">강의 수정</a>
+</div>
+<br>
+<div th:if="${hasAdminAuthority}">
   <a th:href="@{/courses/{id}/delete(id=${course.id})}">강의 삭제</a>
 </div>
-
+<br>
 <a href="/courses">강의리스트로 돌아가기</a>
+<hr>
+
+<!--<form th:action="@{/courses/{courseId}/reviews/new(courseId=${course.id})}" method="post" th:object="${reviewCreateDto}">-->
+<!--<form th:if="${course != null}" th:action="@{/courses/{courseId}/newreview(courseId=${course.id})}" method="post" th:object="${reviewCreateDto}">-->
+<!--  <div>-->
+<!--    <label for="rate">평점:</label>-->
+<!--    <input type="number" id="rate" name="rate" value="" />-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <label for="reviewWrite">수강평:</label>-->
+<!--    <textarea id="reviewWrite" name="reviewWrite" th:field="${reviewCreateDto.reviewWrite}" /></textarea>-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <label for="advantage">강의 장점:</label>-->
+<!--    <select id="advantage" name="advantage" th:field="*{advantage}" />-->
+<!--      <option value="">이 강의의 장점을 선택해주세요.</option>-->
+<!--      <option th:each="advantage : ${T(com.launcher.inflaunch.enum_status.Advantage).values()}" th:value="${advantage}" th:text="${advantage.getAdv()}"></option>-->
+<!--    </select>-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <label for="disadvantage">강의 단점:</label>-->
+<!--    <select id="disadvantage" name="disadvantage" th:field="*{disadvantage}" />-->
+<!--      <option value="">이 강의의 단점을 선택해주세요.</option>-->
+<!--      <option th:each="disadvantage : ${T(com.launcher.inflaunch.enum_status.Disadvantage).values()}" th:value="${disadvantage}" th:text="${disadvantage.getDis()}"></option>-->
+<!--    </select>-->
+<!--  </div>-->
+<!--  <div>-->
+<!--    <input type="hidden" name="courseId" th:value="${reviewCreateDto.courseId}" />-->
+<!--  </div>-->
+<!--  <button type="submit">수강평 등록</button>-->
+<!--</form>-->
+
+<h2>[수강평]</h2>
+
+<h3>수강평 작성</h3>
+<a th:href="@{/courses/{courseId}/newreview(courseId=${courseId})}">수강평을 작성하세요.</a>
+
+<div th:each="review : ${reviews}">
+  <div>
+    <p><strong>평점:</strong> <span th:text="${review.rate}"></span></p>
+    <p><strong>수강평:</strong> <span th:text="${review.reviewWrite}"></span></p>
+    <p><strong>강의 장점:</strong> <span th:text="${review.advantage.adv}"></span></p>
+    <p><strong>강의 단점:</strong> <span th:text="${review.disadvantage.dis}"></span></p>
+
+    <!-- Edit and delete buttons for the review author -->
+    <div th:if="${currentUser != null and currentUser.id == review.user.id}">
+      <a th:href="@{/courses/{courseId}/reviews/{reviewId}/edit(courseId=${courseId}, reviewId=${review.id})}"
+         class="btn btn-primary">수강평 수정</a>
+      <br>
+      <a th:href="@{/courses/{courseId}/reviews/{reviewId}/delete(courseId=${courseId}, reviewId=${review.id})}"
+         class="btn btn-danger">수강평 삭제</a>
+    </div>
+
+    <!-- Report Review button for logged-in users -->
+    <div th:if="${currentUser != null}">
+      <!--      <form th:action="@{/courses/{courseId}/reviews/{reviewId}/report(courseId=${courseId}, reviewId=${review.id})}"-->
+      <!--            method="post"-->
+      <!--            th:object="${reportReviewCreateDto}">-->
+      <!--        <button type="submit" class="btn btn-warning">수강평 신고</button>-->
+      <!--      </form>-->
+      <a th:href="@{/courses/{courseId}/reviews/{reviewId}/report(courseId=${courseId}, reviewId=${review.id})}"
+         class="btn btn-warning">수강평 신고</a>
+    </div>
+  </div>
+  <hr>
+</div>
+
+
 </body>
 </html>

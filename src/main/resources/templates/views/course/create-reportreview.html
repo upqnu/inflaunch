@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Report Review</title>
+</head>
+<body>
+
+<h1>수강평 신고</h1>
+
+<form th:action="@{/courses/{courseId}/reviews/{reviewId}/report(courseId=${courseId}, reviewId=${reviewId})}"
+      method="post"
+      th:object="${reportReviewCreateDto}">
+
+  <div>
+    <label for="content">신고 사유:</label>
+    <textarea id="content" th:field="*{content}" rows="4" cols="50"></textarea>
+    <span th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></span>
+  </div>
+
+  <button type="submit">신고 제출</button>
+</form>
+
+<a th:href="@{/courses/{courseId}/reviews(courseId=${courseId})}">신고 취소</a>
+
+</body>
+</html>

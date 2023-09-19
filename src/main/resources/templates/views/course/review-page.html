@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Course Reviews</title>
+</head>
+<body>
+
+<h1>수강평</h1>
+
+<div th:each="review : ${reviews}">
+  <div>
+    <p><strong>평점:</strong> <span th:text="${review.rate}"></span></p>
+    <p><strong>수강평:</strong> <span th:text="${review.reviewWrite}"></span></p>
+    <p><strong>강의 장점:</strong> <span th:text="${review.advantage}"></span></p>
+    <p><strong>강의 단점:</strong> <span th:text="${review.disadvantage}"></span></p>
+
+    <!-- Edit and delete buttons for the review author -->
+    <div th:if="${currentUser != null and currentUser.id == review.user.id}">
+      <a th:href="@{/courses/{courseId}/reviews/{reviewId}/edit(courseId=${courseId}, reviewId=${review.id})}"
+         class="btn btn-primary">수강평 수정</a>
+      <br>
+      <a th:href="@{/courses/{courseId}/reviews/{reviewId}/delete(courseId=${courseId}, reviewId=${review.id})}"
+         class="btn btn-danger">수강평 삭제</a>
+    </div>
+
+    <!-- Report Review button for logged-in users -->
+    <div th:if="${currentUser != null}">
+      <form th:action="@{/courses/{courseId}/reviews/{reviewId}/report(courseId=${courseId}, reviewId=${review.id})}"
+            method="post">
+        <button type="submit" class="btn btn-warning">수강평 신고</button>
+      </form>
+    </div>
+  </div>
+  <hr>
+</div>
+
+</body>
+</html>
