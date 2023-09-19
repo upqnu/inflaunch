@@ -196,7 +196,7 @@ public class CourseController {
             return "course/course-page";
         }
 
-        return "redirect:/courses";
+        return "redirect:/courses/{id}";
     }
 
     /* 강의 삭제 폼으로 이동 */

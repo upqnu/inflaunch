@@ -96,7 +96,13 @@ public class CourseService {
     }
 
     /* 유저가 mentor 권한을 가지고 있는지 여부 */
+    @Transactional
     public boolean hasMentorAuthority(User user) {
+
+        if (user == null) {
+            return false;
+        }
+
         for (Authority authority : user.getAuthorities()) {
             if ("ROLE_MENTOR".equals(authority.getName())) {
                 return true;
@@ -161,6 +167,11 @@ public class CourseService {
     /* 유저가 admin 권한을 가지고 있는지 여부 */
     @Transactional
     public boolean hasAdminAuthority(User user) {
+
+        if (user == null) {
+            return false;
+        }
+
         for (Authority authority : user.getAuthorities()) {
             if ((authority.getName()).equals("ROLE_ADMIN")) {
                 return true;
