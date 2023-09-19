@@ -72,11 +72,11 @@
   </div>
 </ul>
 
-<div th:if="${hasAdminAuthority} or ${hasMentorAuthority}">
+<div th:if="${currentUser != null and hasAdminAuthority} or ${hasMentorAuthority}">
   <a th:href="@{/courses/{id}/edit(id=${course.id})}">강의 수정</a>
 </div>
 <br>
-<div th:if="${hasAdminAuthority}">
+<div th:if="${currentUser != null and hasAdminAuthority}">
   <a th:href="@{/courses/{id}/delete(id=${course.id})}">강의 삭제</a>
 </div>
 <br>
