@@ -1,5 +1,6 @@
 package com.launcher.inflaunch.service;
 
+import com.launcher.inflaunch.config.PrincipalDetails;
 import com.launcher.inflaunch.domain.*;
 import com.launcher.inflaunch.dto.ReviewCreateDto;
 import com.launcher.inflaunch.dto.ReviewMapper;
@@ -11,6 +12,8 @@ import com.launcher.inflaunch.repository.ReviewRepository;
 import com.launcher.inflaunch.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,20 +34,46 @@ public class ReviewService {
 
     /* 수강평 생성 권한 있는지 확인 */
     @Transactional
-    public void hasReviewCreateAuthority() {
+    public boolean hasReviewCreateAuthority(Long courseId) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        log.info("ㅌㅌㅌ" + String.valueOf(authentication));
+//        String username = authentication.getName();
+//
+//        User user = userRepository.findByUsername(username);
+//        if (user == null) {
+//            throw new IllegalArgumentException("User not found: " + username);
+//        }
+//
+//        // user가 해당 강의를 결제하지 않았다면 수강평을 작성할 권한이 없음
+////        if (!isPaidCourse(user)) {
+////            throw new AccessDeniedException("수강평을 작성할 권한이 없습니다.");
+////        }
+//
+//        Long userId = Long.parseLong(authentication.getName());
+//        Optional<List<Review>> reviews = reviewRepository.findByUserIdAndCourseId(userId, courseId);
+//
+//        log.info("ㅎㅎㅎ" + String.valueOf(reviews));
+//
+//        if (reviews.isPresent() && !reviews.get().isEmpty()) {
+//            throw new AccessDeniedException("이미 해당 강의에 대한 리뷰를 작성하였습니다.");
+//        }
+//
+//        return true;
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-
-        User user = userRepository.findByUsername(username);
-
-        if (user == null) {
-            throw new IllegalArgumentException("User not found: " + username);
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            throw new AccessDeniedException("로그인이 필요합니다.");
         }
 
-        // user가 해당 강의를 결제하지 않았다면 수강평을 작성할 권한이 없음
-//        if (!isPaidCourse(user)) {
-//            throw new AccessDeniedException("수강평을 작성할 권한이 없습니다.");
-//        }
+        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+        Long userId = principalDetails.getUser().getId();
+
+        Optional<List<Review>> reviews = reviewRepository.findByUserIdAndCourseId(userId, courseId);
+        if (reviews.isPresent() && !reviews.get().isEmpty()) {
+            throw new AccessDeniedException("이미 해당 강의에 대한 리뷰를 작성하였습니다.");
+        }
+
+        return true;
     }
 
     /* 수강평 작성 */

@@ -116,7 +116,8 @@
 <h2>[수강평]</h2>
 
 <h3>수강평 작성</h3>
-<a th:href="@{/courses/{courseId}/newreview(courseId=${courseId})}">수강평을 작성하세요.</a>
+<!--<a th:href="@{/courses/{courseId}/newreview(courseId=${courseId})}">수강평을 작성하세요.</a>-->
+<a th:unless="${hasReviewsCreateAuthority}" th:href="@{/courses/{courseId}/newreview(courseId=${courseId})}">수강평을 작성하세요.</a>
 
 <div th:each="review : ${reviews}">
   <div>
