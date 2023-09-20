@@ -23,7 +23,7 @@ public class ReportReviewController {
     /* 수강평 신고 페이지로 이동 */
     @GetMapping("/{reviewId}/report")
     public String showReportReview(@PathVariable Long courseId, @PathVariable Long reviewId, Model model) {
-        Long userId = reportReviewService.getUserIdForReportReviewCreate();
+        Long userId = reportReviewService.getUserIdForReportReviewCreate(reviewId);
 
         ReportReviewCreateDto reportReviewCreateDto = new ReportReviewCreateDto();
         reportReviewCreateDto.setReviewId(reviewId);
