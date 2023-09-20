@@ -1,5 +1,6 @@
 package com.launcher.inflaunch.service;
 
+import com.launcher.inflaunch.config.PrincipalDetails;
 import com.launcher.inflaunch.domain.Authority;
 import com.launcher.inflaunch.domain.ReportReview;
 import com.launcher.inflaunch.domain.Review;
@@ -10,13 +11,20 @@ import com.launcher.inflaunch.repository.ReportReviewRepository;
 import com.launcher.inflaunch.repository.ReviewRepository;
 import com.launcher.inflaunch.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class ReportReviewService {
 
     private final ReviewRepository reviewRepository;
@@ -25,17 +33,31 @@ public class ReportReviewService {
 
     /* 수강평을 신고할 수 있는 권한을 가진 유저인지 판별 */
     @Transactional
-    public Long getUserIdForReportReviewCreate() {
-        // 모든 로그인한 유저는 어떠한 수강평에 대해서도 신고가 가능하다
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        User user = userRepository.findByUsername(username);
+    public Long getUserIdForReportReviewCreate(Long reviewId) {
+//        // 모든 로그인한 유저는 어떠한 수강평에 대해서도 신고가 가능하다
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        String username = authentication.getName();
+//        User user = userRepository.findByUsername(username);
+//
+//        if (user == null) {
+//            throw new IllegalArgumentException("유저를 찾을 수 없습니다 : " + username);
+//        }
+//
+//        return user.getId();
 
-        if (user == null) {
-            throw new IllegalArgumentException("유저를 찾을 수 없습니다 : " + username);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            throw new AccessDeniedException("로그인이 필요합니다.");
         }
 
-        return user.getId();
+        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+        Long userId = principalDetails.getUser().getId();
+
+        Optional<List<ReportReview>> reportReviews = reportReviewRepository.findByUserIdAndReviewId(userId, reviewId);
+        if (reportReviews.isPresent() && !reportReviews.get().isEmpty()) {
+            throw new AccessDeniedException("이미 해당 수강평을 신고하셨습니다.");
+        }
+        else return userId;
     }
 
     /* 수강평 신고 작성 */

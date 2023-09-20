@@ -7,6 +7,7 @@ import com.launcher.inflaunch.dto.ReviewPatchDto;
 import com.launcher.inflaunch.repository.UserRepository;
 import com.launcher.inflaunch.service.ReviewService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +22,7 @@ import java.security.Principal;
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/courses/{courseId}")
+@Slf4j
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -30,12 +32,12 @@ public class ReviewController {
     @GetMapping("/newreview")
     public String showCreateReviewForm(@PathVariable Long courseId, Model model, RedirectAttributes redirectAttributes) {
         try {
-            reviewService.hasReviewCreateAuthority();
+            boolean hasReviewCreateAuthority = reviewService.hasReviewCreateAuthority(courseId);
+            log.info("ㅋㅋㅋ" + String.valueOf(hasReviewCreateAuthority));
             ReviewCreateDto reviewCreateDto = new ReviewCreateDto();
             reviewCreateDto.setCourseId(courseId);
             model.addAttribute("reviewCreateDto", reviewCreateDto);
-//            model.addAttribute("courseId", courseId);
-
+            model.addAttribute("hasReviewCreateAuthority", hasReviewCreateAuthority);
             model.addAttribute("advantageEnum", com.launcher.inflaunch.enum_status.Advantage.values());
             model.addAttribute("disadvantageEnum", com.launcher.inflaunch.enum_status.Disadvantage.values());
 
