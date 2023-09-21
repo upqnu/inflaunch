@@ -112,15 +112,17 @@
 <!--  </div>-->
 <!--  <button type="submit">수강평 등록</button>-->
 <!--</form>-->
-
-<h2>[수강평]</h2>
-
 <h3>수강평 작성</h3>
-<!--<a th:href="@{/courses/{courseId}/newreview(courseId=${courseId})}">수강평을 작성하세요.</a>-->
 <a th:unless="${hasReviewsCreateAuthority}" th:href="@{/courses/{courseId}/newreview(courseId=${courseId})}">수강평을 작성하세요.</a>
-
+<h2>[수강평]</h2>
+<div>
+  <p><strong>총 수강평 수:</strong><span th:text="${reviewCount}"></span></p>
+  <p><strong>강의 평점:</strong><span th:text="${averageRate}"></span></p>
+</div>
+<hr>
 <div th:each="review : ${reviews}">
   <div>
+    <p><strong>작성자:</strong> <span th:text="${review.user.username}"></span></p>
     <p><strong>평점:</strong> <span th:text="${review.rate}"></span></p>
     <p><strong>수강평:</strong> <span th:text="${review.reviewWrite}"></span></p>
     <p><strong>강의 장점:</strong> <span th:text="${review.advantage.adv}"></span></p>
