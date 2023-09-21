@@ -1,5 +1,6 @@
 package com.launcher.inflaunch.service;
 
+import com.launcher.inflaunch.config.PrincipalDetails;
 import com.launcher.inflaunch.domain.*;
 import com.launcher.inflaunch.dto.CourseCreateDto;
 import com.launcher.inflaunch.dto.CourseMapper;
@@ -10,11 +11,11 @@ import com.launcher.inflaunch.exception.CourseNotFoundException;
 import com.launcher.inflaunch.repository.CourseRepository;
 import com.launcher.inflaunch.repository.TypeRepository;
 import com.launcher.inflaunch.repository.UserRepository;
-import com.launcher.inflaunch.repository.VideoRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,26 +34,32 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final TypeRepository typeRepository;
-    private final VideoRepository videoRepository;
     private final CourseMapper courseMapper;
-
 
     /* 강의를 생성하려는 유저가 mentor인지 여부 판별 */
     @Transactional
-    public void proveMentorRole() {
+    public boolean proveMentorRole() {
 
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            throw new AccessDeniedException("로그인이 필요합니다.");
+        }
 
-        User user = userRepository.findByUsername(username);
+//        String username = authentication.getName();
+//        User user = userRepository.findByUsername(username);
+        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+        User user = principalDetails.getUser();
 
         if (user == null) {
-            throw new IllegalArgumentException("사용자를 찾을 수 없습니다: " + username);
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
         }
 
         if (!hasMentorAuthority(user)) {
             throw new AccessDeniedException("강의를 생성할 권한이 없습니다.");
         }
+
+        return true;
     }
 
     /* 강의 생성 */

@@ -33,7 +33,7 @@ public class ReviewController {
     public String showCreateReviewForm(@PathVariable Long courseId, Model model, RedirectAttributes redirectAttributes) {
         try {
             boolean hasReviewCreateAuthority = reviewService.hasReviewCreateAuthority(courseId);
-            log.info("ㅋㅋㅋ" + String.valueOf(hasReviewCreateAuthority));
+//            log.info("ㅋㅋㅋ" + String.valueOf(hasReviewCreateAuthority));
             ReviewCreateDto reviewCreateDto = new ReviewCreateDto();
             reviewCreateDto.setCourseId(courseId);
             model.addAttribute("reviewCreateDto", reviewCreateDto);
