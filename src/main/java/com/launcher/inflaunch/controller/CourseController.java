@@ -7,6 +7,7 @@ import com.launcher.inflaunch.domain.Type;
 import com.launcher.inflaunch.domain.User;
 import com.launcher.inflaunch.dto.CourseCreateDto;
 import com.launcher.inflaunch.dto.CoursePatchDto;
+import com.launcher.inflaunch.dto.ReviewGetDto;
 import com.launcher.inflaunch.exception.CourseNotFoundException;
 import com.launcher.inflaunch.repository.TypeRepository;
 import com.launcher.inflaunch.repository.UserRepository;
@@ -115,12 +116,18 @@ public class CourseController {
 
         try {
             Course course = courseService.getCourse(id);
-            List<Review> reviews = reviewService.getAllReviews(id);
             model.addAttribute("course", course);
-            model.addAttribute("reviews", reviews);
             model.addAttribute("courseId", id);
 
-            boolean hasReviews = !reviews.isEmpty();
+//            List<Review> reviews = reviewService.getAllReviews(id);
+//            model.addAttribute("reviews", reviews);
+
+            List<ReviewGetDto> reviewGetDtos = reviewService.getAllReviewsAndNum(id);
+            model.addAttribute("reviews", reviewGetDtos.get(0).getReviews());
+            model.addAttribute("reviewCount", reviewGetDtos.get(0).getReviewCount());
+            model.addAttribute("averageRate", reviewGetDtos.get(0).getAverageRate());
+
+            boolean hasReviews = !reviewGetDtos.get(0).getReviews().isEmpty();
             model.addAttribute("hasReviews", hasReviews);
 
             User currentUser = Optional.ofNullable(principal)

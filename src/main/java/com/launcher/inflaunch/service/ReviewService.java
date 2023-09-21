@@ -3,6 +3,7 @@ package com.launcher.inflaunch.service;
 import com.launcher.inflaunch.config.PrincipalDetails;
 import com.launcher.inflaunch.domain.*;
 import com.launcher.inflaunch.dto.ReviewCreateDto;
+import com.launcher.inflaunch.dto.ReviewGetDto;
 import com.launcher.inflaunch.dto.ReviewMapper;
 import com.launcher.inflaunch.dto.ReviewPatchDto;
 import com.launcher.inflaunch.enum_status.ReviewStatus;
@@ -20,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +30,6 @@ import java.util.Optional;
 @Slf4j
 public class ReviewService {
     private final ReviewRepository reviewRepository;
-    private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final ReviewMapper reviewMapper;
 
@@ -100,8 +101,24 @@ public class ReviewService {
     }
 
     /* 특정 강의에 대해 작성된 모든 유효한 수강평 리스트*/
-    public List<Review> getAllReviews(Long courseId) {
-        return reviewRepository.findByCourseIdAndReviewStatus(courseId, ReviewStatus.ACTIVE);
+//    public List<Review> getAllReviews(Long courseId) {
+//        return reviewRepository.findByCourseIdAndReviewStatus(courseId, ReviewStatus.ACTIVE);
+//    }
+
+    /* 특정 강의에 대해 작성된 모든 유효한 수강평 리스트 및 총 리뷰수, 평점평균*/
+    @Transactional
+    public List<ReviewGetDto> getAllReviewsAndNum(Long courseId) {
+        List<Review> reviews = reviewRepository.findByCourseIdAndReviewStatus(courseId, ReviewStatus.ACTIVE);
+        Integer reviewCount = reviews.size();
+        Float averageRate = (float) reviews.stream()
+                .mapToDouble(Review::getRate)
+                .average()
+                .orElse(0.0);
+
+        List<ReviewGetDto> reviewGetDtos = new ArrayList<>();
+        reviewGetDtos.add(new ReviewGetDto(reviews, reviewCount, averageRate));
+
+        return reviewGetDtos;
     }
 
     /* 개별 수강평 */
