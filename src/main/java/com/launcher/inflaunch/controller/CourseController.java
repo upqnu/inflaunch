@@ -1,6 +1,5 @@
 package com.launcher.inflaunch.controller;
 
-import com.launcher.inflaunch.config.PrincipalDetailService;
 import com.launcher.inflaunch.config.PrincipalDetails;
 import com.launcher.inflaunch.domain.Course;
 import com.launcher.inflaunch.domain.Review;
@@ -16,7 +15,7 @@ import com.launcher.inflaunch.service.ReviewService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -39,25 +38,25 @@ public class CourseController {
     private final CourseService courseService;
     private final TypeRepository typeRepository;
     private final UserRepository userRepository;
-    private final PrincipalDetailService principalDetailService;
     private final ReviewService reviewService;
 
     /* 강의 생성 정보를 입력하는 폼으로 이동 */
     @GetMapping("/new")
-    @PreAuthorize("hasAuthority('ROLE_MENTOR')")
+//    @PreAuthorize("hasAuthority('ROLE_MENTOR')")
     public String showCourseCreateForm(Model model, RedirectAttributes redirectAttributes) {
 
         try {
-            courseService.proveMentorRole();
+            boolean hasMentorAuthority = courseService.proveMentorRole();
+            model.addAttribute("hasMentorAuthority", hasMentorAuthority);
 
             List<Type> types = typeRepository.findAll();
             model.addAttribute("types", types);
 
             model.addAttribute("courseCreateDto", new CourseCreateDto());
 
-            for (Type type : types) {
-                log.info("Type: {}" + type.getType());
-            }
+//            for (Type type : types) {
+//                log.info("Type: {}" + type.getType());
+//            }
 
             return "course/create-course";
         } catch (IllegalArgumentException e) {
@@ -92,10 +91,22 @@ public class CourseController {
 
     /* 전체 강의 리스트 페이지 */
     @GetMapping
-    public String showCourseList(Model model) {
+    public String showCourseList(Model model, Principal principal) {
+
         List<Course> courses = courseService.getAllCourses();
         model.addAttribute("courses", courses);
-        return "course/courses"; // Without the file extension (.html)
+
+        boolean hasMentorAuthority = false;
+
+        try {
+            hasMentorAuthority = courseService.proveMentorRole();
+        } catch (AccessDeniedException e) {
+            hasMentorAuthority = false;
+        }
+
+        model.addAttribute("hasMentorAuthority", hasMentorAuthority);
+
+        return "course/courses";
     }
 
     /* 개별 강의 페이지 */
