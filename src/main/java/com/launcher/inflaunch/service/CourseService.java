@@ -14,6 +14,7 @@ import com.launcher.inflaunch.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -119,8 +120,11 @@ public class CourseService {
     }
 
     /* 모든 강의 리스트 */
-    public List<Course> getAllCourses() {
-        return courseRepository.findByCourseStatus(CourseStatus.ACTIVE);
+    public Page<Course> getAllCourses(int page) {
+        List<Sort.Order> courseList = new ArrayList<>();
+        courseList.add(Sort.Order.desc("regDate"));
+        Pageable pageable = PageRequest.of(page, 5, Sort.by(courseList));
+        return courseRepository.findByCourseStatus(CourseStatus.ACTIVE, pageable);
     }
 
     /* 개별 강의 페이지 */
@@ -217,4 +221,5 @@ public class CourseService {
         existingCourse.setCourseStatus(CourseStatus.DELETED);
         courseRepository.save(existingCourse);
     }
+
 }
