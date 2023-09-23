@@ -16,6 +16,7 @@ import com.launcher.inflaunch.service.ReviewService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -90,11 +91,31 @@ public class CourseController {
         return "redirect:/courses";
     }
 
+//    /* 전체 강의 리스트 페이지 */
+//    @GetMapping
+//    public String showCourseList(Model model, Principal principal) {
+//
+//        List<Course> courses = courseService.getAllCourses();
+//        model.addAttribute("courses", courses);
+//
+//        boolean hasMentorAuthority = false;
+//
+//        try {
+//            hasMentorAuthority = courseService.proveMentorRole();
+//        } catch (AccessDeniedException e) {
+//            hasMentorAuthority = false;
+//        }
+//
+//        model.addAttribute("hasMentorAuthority", hasMentorAuthority);
+//
+//        return "course/courses";
+//    }
+
     /* 전체 강의 리스트 페이지 */
     @GetMapping
-    public String showCourseList(Model model, Principal principal) {
+    public String showCourseList(Model model, Principal principal, @RequestParam(value="page", defaultValue="0") int page) {
 
-        List<Course> courses = courseService.getAllCourses();
+        Page<Course> courses = courseService.getAllCourses(page);
         model.addAttribute("courses", courses);
 
         boolean hasMentorAuthority = false;
@@ -106,6 +127,10 @@ public class CourseController {
         }
 
         model.addAttribute("hasMentorAuthority", hasMentorAuthority);
+
+        // 현재 페이지 번호와 총 페이지 수를 모델에 추가
+        model.addAttribute("currentPage", courses.getNumber());
+        model.addAttribute("totalPages", courses.getTotalPages());
 
         return "course/courses";
     }
