@@ -40,7 +40,8 @@
   </thead>
 
   <tbody>
-  <tr th:each="reportedReview : ${reportedReviews}">
+
+  <tr th:if="${reportedReviewsPage != null}" th:each="reportedReview : ${reportedReviewsPage}">
     <td th:text="${reportedReview.reportedReviewId}"></td>
     <td th:text="${reportedReview.reportedReviewWrite}"></td>
     <td th:text="${reportedReview.reviewUserId}"></td>
@@ -58,6 +59,7 @@
       <form id="reviewForm" th:action="@{/admin/report-reviews}" method="post">
         <input type="hidden" name="_method" value="patch" />
         <input type="hidden" name="reviewId" th:value="${reportedReview.reportedReviewId}" />
+        <input type="hidden" name="currentPage" th:value="${currentPage}" />
         <button type="submit" name="action" value="active" class="active-button" onclick="confirmReviewAction('active')">수강평 재노출</button>
         <button type="submit" name="action" value="inactive" class="inactive-button" onclick="confirmReviewAction('inactive')">수강평 숨김</button>
       </form>
@@ -87,5 +89,39 @@
   </tbody>
 </table>
 
+<div th:if="${reportedReviewsPage != null and !reportedReviewsPage.isEmpty() and reportedReviewsPage.totalPages > 1}">
+  <ul class="pagination">
+    <li th:classappend="${reportedReviewsPage.first} ? 'disabled'">
+      <a class="page-link" th:href="@{|?page=0|}">처음</a>
+    </li>
+
+    <li th:if="${reportedReviewsPage.hasPrevious()} or !reportedReviewsPage.first" class="enabled">
+      <a class="page-link" th:href="@{|?page=${reportedReviewsPage.number - 1}|}">이전</a>
+    </li>
+
+    <li th:if="${reportedReviewsPage.number > 2}">
+      <span class="page-link">...</span>
+    </li>
+
+    <li th:each="page: ${#numbers.sequence(reportedReviewsPage.number - 2, reportedReviewsPage.number + 2)}"
+        th:if="${page >= 0 and page < reportedReviewsPage.totalPages}"
+        th:classappend="${page == reportedReviewsPage.number} ? 'active'"
+        class="page-item">
+      <a th:text="${page + 1}" class="page-link" th:href="@{|?page=${page}|}"></a>
+    </li>
+
+    <li th:if="${reportedReviewsPage.number < reportedReviewsPage.totalPages - 3}">
+      <span class="page-link">...</span>
+    </li>
+
+    <li th:if="${reportedReviewsPage.hasNext()} or !reportedReviewsPage.last" class="enabled">
+      <a class="page-link" th:href="@{|?page=${reportedReviewsPage.number + 1}|}">다음</a>
+    </li>
+
+    <li th:class="${reportedReviewsPage.last ? 'disabled' : ''}">
+      <a th:href="@{${url}(page=${reportedReviewsPage.totalPages - 1})}">마지막</a>
+    </li>
+  </ul>
+</div>
 </body>
 </html>
