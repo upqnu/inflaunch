@@ -56,32 +56,25 @@
     <td th:text="${reportedReview.reviewReportingUsername}"></td>
 
     <td>
-      <form id="reviewForm" th:action="@{/admin/report-reviews}" method="post">
+      <form th:id="'reviewForm-' + ${reportedReview.reportedReviewId}" th:action="@{/admin/report-reviews}" method="post" onsubmit="return confirmReviewAction(event)">
         <input type="hidden" name="_method" value="patch" />
         <input type="hidden" name="reviewId" th:value="${reportedReview.reportedReviewId}" />
         <input type="hidden" name="currentPage" th:value="${currentPage}" />
-        <button type="submit" name="action" value="active" class="active-button" onclick="confirmReviewAction('active')">수강평 재노출</button>
-        <button type="submit" name="action" value="inactive" class="inactive-button" onclick="confirmReviewAction('inactive')">수강평 숨김</button>
+        <button type="submit" name="action" value="active" class="active-button">수강평 재노출</button>
+        <button type="submit" name="action" value="inactive" class="inactive-button">수강평 숨김</button>
       </form>
     </td>
 
     <script>
-      function confirmReviewAction(action) {
+      function confirmReviewAction(event) {
         var message = '';
+        var action = event.submitter.value;
         if (action === 'active') {
           message = '해당 수강평을 재노출하시겠습니까?';
         } else if (action === 'inactive') {
           message = '해당 수강평을 숨기시겠습니까?';
         }
-        if (confirm(message)) {
-          var form = document.getElementById('reviewForm');
-          var actionInput = document.createElement('input');
-          actionInput.type = 'hidden';
-          actionInput.name = 'action';
-          actionInput.value = action;
-          form.appendChild(actionInput);
-          form.submit();
-        }
+        return confirm(message);
       }
     </script>
 
